@@ -1,0 +1,70 @@
+<div class="login-container">
+  <div class="login-card">
+    <h1>Login</h1>
+    
+    <div *ngIf="loginError" class="error-message">
+      {{ loginError }}
+    </div>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input
+          id="email"
+          type="email"
+          formControlName="email"
+          placeholder="Enter your email"
+          class="form-control"
+          [class.is-invalid]="email?.invalid && (email?.dirty || submitted)"
+        />
+        <div *ngIf="email?.invalid && (email?.dirty || submitted)" class="error-text">
+          <p *ngIf="email?.errors?.['required']">Email is required</p>
+          <p *ngIf="email?.errors?.['email']">Please enter a valid email</p>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <div class="password-input-group">
+          <input
+            id="password"
+            [type]="showPassword ? 'text' : 'password'"
+            formControlName="password"
+            placeholder="Enter your password"
+            class="form-control"
+            [class.is-invalid]="password?.invalid && (password?.dirty || submitted)"
+          />
+          <button
+            type="button"
+            class="toggle-password"
+            (click)="togglePasswordVisibility()"
+          >
+            {{ showPassword ? 'Hide' : 'Show' }}
+          </button>
+        </div>
+        <div *ngIf="password?.invalid && (password?.dirty || submitted)" class="error-text">
+          <p *ngIf="password?.errors?.['required']">Password is required</p>
+          <p *ngIf="password?.errors?.['minlength']">Password must be at least 6 characters</p>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary" [disabled]="loginForm.invalid || isLoading">
+        {{ isLoading ? 'Logging in...' : 'Login' }}
+      </button>
+    </form>
+
+    <div class="demo-section">
+      <p>Demo Credentials:</p>
+      <button type="button" class="btn btn-secondary" (click)="getUserDemoCredentials()">
+        User Account
+      </button>
+      <button type="button" class="btn btn-secondary" (click)="getAdminDemoCredentials()">
+        Admin Account
+      </button>
+    </div>
+
+    <p class="register-link">
+      Don't have an account? <a routerLink="/register">Register here</a>
+    </p>
+  </div>
+</div>

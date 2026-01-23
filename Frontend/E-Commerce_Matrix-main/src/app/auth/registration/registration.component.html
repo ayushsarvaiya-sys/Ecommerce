@@ -1,0 +1,117 @@
+<div class="registration-container">
+  <div class="registration-card">
+    <h1>Register</h1>
+
+    <div *ngIf="registerError" class="error-message">
+      {{ registerError }}
+    </div>
+
+    <form [formGroup]="registrationForm" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="name">Full Name</label>
+        <input
+          id="name"
+          type="text"
+          formControlName="name"
+          placeholder="Enter your full name"
+          class="form-control"
+          [class.is-invalid]="name?.invalid && (name?.dirty || submitted)"
+        />
+        <div *ngIf="name?.invalid && (name?.dirty || submitted)" class="error-text">
+          <p *ngIf="name?.errors?.['required']">Name is required</p>
+          <p *ngIf="name?.errors?.['minlength']">Name must be at least 2 characters</p>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input
+          id="email"
+          type="email"
+          formControlName="email"
+          placeholder="Enter your email"
+          class="form-control"
+          [class.is-invalid]="email?.invalid && (email?.dirty || submitted)"
+        />
+        <div *ngIf="email?.invalid && (email?.dirty || submitted)" class="error-text">
+          <p *ngIf="email?.errors?.['required']">Email is required</p>
+          <p *ngIf="email?.errors?.['email']">Please enter a valid email</p>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <div class="password-input-group">
+          <input
+            id="password"
+            [type]="showPassword ? 'text' : 'password'"
+            formControlName="password"
+            placeholder="Enter your password"
+            class="form-control"
+            [class.is-invalid]="password?.invalid && (password?.dirty || submitted)"
+          />
+          <button type="button" class="toggle-password" (click)="togglePasswordVisibility()">
+            {{ showPassword ? 'Hide' : 'Show' }}
+          </button>
+        </div>
+        <div *ngIf="password?.invalid && (password?.dirty || submitted)" class="error-text">
+          <p *ngIf="password?.errors?.['required']">Password is required</p>
+          <p *ngIf="password?.errors?.['minlength']">Password must be at least 6 characters</p>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="confirmPassword">Confirm Password</label>
+        <div class="password-input-group">
+          <input
+            id="confirmPassword"
+            [type]="showConfirmPassword ? 'text' : 'password'"
+            formControlName="confirmPassword"
+            placeholder="Confirm your password"
+            class="form-control"
+            [class.is-invalid]="confirmPassword?.invalid && (confirmPassword?.dirty || submitted)"
+          />
+          <button type="button" class="toggle-password" (click)="toggleConfirmPasswordVisibility()">
+            {{ showConfirmPassword ? 'Hide' : 'Show' }}
+          </button>
+        </div>
+        <!-- <div *ngIf="confirmPassword?.invalid && (confirmPassword?.dirty || submitted)" class="error-text">
+          <p *ngIf="confirmPassword?.errors?.['required']">Confirm Password is required</p>
+        </div> -->
+        <div
+          *ngIf="
+            (confirmPassword?.dirty || submitted) &&
+            (confirmPassword?.invalid || registrationForm.errors?.['passwordMismatch'])
+          "
+          class="error-text"
+        >
+          <p *ngIf="confirmPassword?.errors?.['required']">Confirm Password is required</p>
+
+          <p *ngIf="registrationForm.errors?.['passwordMismatch']">Passwords do not match</p>
+        </div>
+      </div>
+      <!-- 
+      <div *ngIf="registrationForm.errors?.['passwordMismatch'] && (confirmPassword?.dirty || submitted)" class="error-text">
+        <p>Passwords do not match</p>
+      </div> -->
+
+      <div class="form-group">
+        <label for="role">Account Type</label>
+        <select id="role" formControlName="role" class="form-control">
+          <option value="User">Regular User</option>
+          <option value="Admin">Admin</option>
+        </select>
+      </div>
+
+      <button
+        type="submit"
+        class="btn btn-primary"
+        [disabled]="registrationForm.invalid || isLoading"
+      >
+        {{ isLoading ? 'Registering...' : 'Register' }}
+      </button>
+    </form>
+
+    <p class="login-link">Already have an account? <a routerLink="/login">Login here</a></p>
+  </div>
+</div>
