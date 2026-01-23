@@ -1,0 +1,295 @@
+<div class="admin-products-container">
+  <div class="products-header">
+    <h1>Product Management</h1>
+    <button (click)="openAddProductModal()" class="btn-add-new">
+      + Add New Product
+    </button>
+  </div>
+
+  <div class="search-bar">
+    <input
+      type="text"
+      placeholder="Search products..."
+      [(ngModel)]="searchTerm"
+      (keyup.enter)="onSearch()"
+      class="search-input"
+    />
+    <button (click)="onSearch()" class="btn-search">Search</button>
+    <button (click)="clearSearch()" class="btn-clear">Clear</button>
+  </div>
+
+  <!-- Messages -->
+  <div *ngIf="errorMessage" class="alert alert-error">
+    {{ errorMessage }}
+  </div>
+  <div *ngIf="successMessage" class="alert alert-success">
+    {{ successMessage }}
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading">
+    <p>Loading products...</p>
+  </div>
+
+  <!-- Products Table -->
+  <div *ngIf="!isLoading && products.length > 0" class="table-responsive">
+    <table class="products-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Description</th>
+          <th>Category</th>
+          <th>Price</th>
+          <th>Quantity</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let product of products" [ngClass]="{ 'low-stock': product.quantity < 10 }">
+          <td>{{ product.id }}</td>
+          <td class="name-cell">{{ product.name }}</td>
+          <td class="description-cell">{{ product.description }}</td>
+          <td>{{ product.categoryName || 'N/A' }}</td>
+          <td class="price-cell">${{ product.price.toFixed(2) }}</td>
+          <td [ngClass]="{ 'low-stock-text': product.quantity < 10 }">
+            {{ product.quantity }}
+          </td>
+          <td class="actions-cell">
+            <button
+              (click)="openEditProductModal(product)"
+              class="btn-edit"
+              title="Edit"
+            >
+              Edit
+            </button>
+            <button
+              (click)="openRestockModal(product)"
+              class="btn-restock"
+              title="Restock"
+            >
+              Restock
+            </button>
+            <button
+              (click)="openDeleteConfirm(product.id)"
+              class="btn-delete"
+              title="Delete"
+            >
+              Delete
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!isLoading && products.length === 0" class="empty-state">
+    <p>No products found. Try adjusting your search or add a new product.</p>
+  </div>
+
+  <!-- Pagination -->
+  <div *ngIf="!isLoading && totalPages > 0" class="pagination">
+    <button
+      (click)="previousPage()"
+      [disabled]="currentPage === 1"
+      class="btn-pagination"
+    >
+      Previous
+    </button>
+
+    <div class="page-numbers">
+      <button
+        *ngFor="let page of getPageNumbers()"
+        (click)="goToPage(page)"
+        [ngClass]="{ active: page === currentPage }"
+        class="page-number"
+      >
+        {{ page }}
+      </button>
+    </div>
+
+    <button
+      (click)="nextPage()"
+      [disabled]="currentPage === totalPages"
+      class="btn-pagination"
+    >
+      Next
+    </button>
+
+    <span class="page-info">
+      Page {{ currentPage }} of {{ totalPages }} (Total: {{ totalCount }})
+    </span>
+  </div>
+</div>
+
+<!-- Add Product Modal -->
+<div *ngIf="showAddProductModal" class="modal-overlay" (click)="closeAddProductModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Add New Product</h2>
+      <button (click)="closeAddProductModal()" class="btn-close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Product Name *</label>
+        <input
+          type="text"
+          [(ngModel)]="newProduct.name"
+          placeholder="Enter product name"
+          class="form-input"
+        />
+      </div>
+      <div class="form-group">
+        <label>Description *</label>
+        <textarea
+          [(ngModel)]="newProduct.description"
+          placeholder="Enter product description"
+          class="form-input"
+          rows="3"
+        ></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Price *</label>
+          <input
+            type="number"
+            [(ngModel)]="newProduct.price"
+            placeholder="0.00"
+            min="0"
+            step="0.01"
+            class="form-input"
+          />
+        </div>
+        <div class="form-group">
+          <label>Quantity *</label>
+          <input
+            type="number"
+            [(ngModel)]="newProduct.quantity"
+            placeholder="0"
+            min="0"
+            class="form-input"
+          />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Category ID *</label>
+        <input
+          type="number"
+          [(ngModel)]="newProduct.categoryId"
+          placeholder="1"
+          min="1"
+          class="form-input"
+        />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button (click)="closeAddProductModal()" class="btn-cancel">
+        Cancel
+      </button>
+      <button (click)="addProduct()" class="btn-submit">Add Product</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Product Modal -->
+<div *ngIf="showEditProductModal" class="modal-overlay" (click)="closeEditProductModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Edit Product</h2>
+      <button (click)="closeEditProductModal()" class="btn-close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Product Name *</label>
+        <input
+          type="text"
+          [(ngModel)]="editProduct.name"
+          placeholder="Enter product name"
+          class="form-input"
+        />
+      </div>
+      <div class="form-group">
+        <label>Description *</label>
+        <textarea
+          [(ngModel)]="editProduct.description"
+          placeholder="Enter product description"
+          class="form-input"
+          rows="3"
+        ></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Price *</label>
+          <input
+            type="number"
+            [(ngModel)]="editProduct.price"
+            placeholder="0.00"
+            min="0"
+            step="0.01"
+            class="form-input"
+          />
+        </div>
+        <div class="form-group">
+          <label>Category ID *</label>
+          <input
+            type="number"
+            [(ngModel)]="editProduct.categoryId"
+            placeholder="1"
+            min="1"
+            class="form-input"
+          />
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button (click)="closeEditProductModal()" class="btn-cancel">
+        Cancel
+      </button>
+      <button (click)="updateProduct()" class="btn-submit">Update Product</button>
+    </div>
+  </div>
+</div>
+
+<!-- Restock Modal -->
+<div *ngIf="showRestockModal" class="modal-overlay" (click)="closeRestockModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Restock Product</h2>
+      <button (click)="closeRestockModal()" class="btn-close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Add Quantity *</label>
+        <input
+          type="number"
+          [(ngModel)]="restockData.quantity"
+          placeholder="0"
+          min="1"
+          class="form-input"
+        />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button (click)="closeRestockModal()" class="btn-cancel">Cancel</button>
+      <button (click)="restockProduct()" class="btn-submit">Restock</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div *ngIf="showDeleteConfirm" class="modal-overlay" (click)="closeDeleteConfirm()">
+  <div class="modal modal-small" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Confirm Delete</h2>
+      <button (click)="closeDeleteConfirm()" class="btn-close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p>Are you sure you want to delete this product? This action cannot be undone.</p>
+    </div>
+    <div class="modal-footer">
+      <button (click)="closeDeleteConfirm()" class="btn-cancel">Cancel</button>
+      <button (click)="confirmDelete()" class="btn-danger">Delete</button>
+    </div>
+  </div>
+</div>

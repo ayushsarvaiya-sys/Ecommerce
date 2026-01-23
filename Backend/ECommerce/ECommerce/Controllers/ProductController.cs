@@ -1,6 +1,7 @@
 ﻿using ECommerce.DTO;
 using ECommerce.Interfaces;
 using ECommerce.Utils;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,7 +16,8 @@ namespace ECommerce.Controllers
         {
             _productService = productService;
         }
-        
+
+        [Authorize(Roles = "Admin")]
         [HttpPost("Add")]
         public async Task<IActionResult> AddProduct([FromBody] CreateProductDTO product)
         {
@@ -92,6 +94,39 @@ namespace ECommerce.Controllers
             }
         }
 
+        [Authorize(Roles = "Admin")]
+        [HttpGet("GetPaginatedAdmin")]
+        public async Task<IActionResult> GetProductsAdminPaginated([FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] string? search = null)
+        {
+            try
+            {
+                // Validate page and pageSize
+                if (page < 1)
+                    page = 1;
+                if (pageSize < 1)
+                    pageSize = 10;
+                if (pageSize > 100)
+                    pageSize = 100;
+
+                // Convert page and pageSize to offset
+                int offset = (page - 1) * pageSize;
+                var request = new PaginationRequest 
+                { 
+                    Offset = offset, 
+                    Limit = pageSize,
+                    SearchTerm = search
+                };
+                var result = await _productService.GetProductsAdminPaginatedService(request);
+                
+                return Ok(new ApiResponse<PaginatedResponse<AdminProductResponseDTO>>(200, result, "Products retrieved successfully"));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new ApiError(400, ex.Message));
+            }
+        }
+
+        [Authorize(Roles = "Admin")]
         [HttpPut("Update")]
         public async Task<IActionResult> UpdateProduct([FromBody] ProductDTO product)
         {
@@ -106,6 +141,7 @@ namespace ECommerce.Controllers
             }
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpDelete("Delete/{id}")]
         public async Task<IActionResult> DeleteProduct(int id)
         {
@@ -137,6 +173,7 @@ namespace ECommerce.Controllers
             }
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPut("Restock")]
         public async Task<IActionResult> RestockProduct([FromBody] RestockProductRequest request)
         {

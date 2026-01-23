@@ -26,6 +26,10 @@ namespace ECommerce.Mappings
             CreateMap<ProductModel, ProductResponseDTO>()
                 .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category != null ? src.Category.Name : null))
                 .ForMember(dest => dest.StockStatus, opt => opt.Ignore()); // StockStatus is calculated in service
+            
+            // Product to Admin Response DTO
+            CreateMap<ProductModel, AdminProductResponseDTO>()
+                .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category != null ? src.Category.Name : null));
         }
     }
 }

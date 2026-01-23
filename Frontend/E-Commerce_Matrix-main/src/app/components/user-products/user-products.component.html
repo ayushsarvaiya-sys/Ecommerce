@@ -1,0 +1,98 @@
+<div class="user-products-container">
+  <div class="products-header">
+    <h1>Products</h1>
+    <div class="search-bar">
+      <input
+        type="text"
+        placeholder="Search products..."
+        [(ngModel)]="searchTerm"
+        (keyup.enter)="onSearch()"
+        class="search-input"
+      />
+      <button (click)="onSearch()" class="btn-search">Search</button>
+      <button (click)="clearSearch()" class="btn-clear">Clear</button>
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="errorMessage" class="alert alert-error">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading">
+    <p>Loading products...</p>
+  </div>
+
+  <!-- Products Grid -->
+  <div *ngIf="!isLoading && products.length > 0" class="products-grid">
+    <div *ngFor="let product of products" class="product-card">
+      <div class="product-image">
+        <img
+          src="https://via.placeholder.com/300x300?text={{product.name}}"
+          alt="{{ product.name }}"
+        />
+      </div>
+      <div class="product-info">
+        <h3>{{ product.name }}</h3>
+        <p class="category" *ngIf="product.categoryName">
+          {{ product.categoryName }}
+        </p>
+        <p class="description">{{ product.description }}</p>
+        <div class="product-footer">
+          <div class="price-stock">
+            <span class="price">${{ product.price.toFixed(2) }}</span>
+            <span
+              class="stock"
+              [ngClass]="{ 'low-stock': product.quantity < 10 }"
+            >
+              Stock: {{ product.quantity }}
+            </span>
+          </div>
+          <button class="btn-add-to-cart" [disabled]="product.quantity === 0">
+            {{ product.quantity === 0 ? 'Out of Stock' : 'Add to Cart' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!isLoading && products.length === 0" class="empty-state">
+    <p>No products found. Try adjusting your search.</p>
+  </div>
+
+  <!-- Pagination -->
+  <div *ngIf="!isLoading && totalPages > 0" class="pagination">
+    <button
+      (click)="previousPage()"
+      [disabled]="currentPage === 1"
+      class="btn-pagination"
+    >
+      Previous
+    </button>
+
+    <div class="page-numbers">
+      <button
+        *ngFor="let page of getPageNumbers()"
+        (click)="goToPage(page)"
+        [ngClass]="{ active: page === currentPage }"
+        class="page-number"
+      >
+        {{ page }}
+      </button>
+    </div>
+
+    <button
+      (click)="nextPage()"
+      [disabled]="currentPage === totalPages"
+      class="btn-pagination"
+    >
+      Next
+    </button>
+
+    <span class="page-info">
+      Page {{ currentPage }} of {{ totalPages }} (Total: {{ totalCount }})
+    </span>
+  </div>
+</div>

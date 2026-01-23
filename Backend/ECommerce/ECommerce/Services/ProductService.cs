@@ -109,6 +109,48 @@ namespace ECommerce.Services
             };
         }
 
+        private AdminProductResponseDTO MapToAdminResponseDTO(ProductModel product)
+        {
+            return _mapper.Map<AdminProductResponseDTO>(product);
+        }
+
+        public async Task<PaginatedResponse<AdminProductResponseDTO>> GetProductsAdminPaginatedService(PaginationRequest request)
+        {
+            if (request == null)
+                throw new ArgumentException("Pagination request is required");
+
+            // Validate parameters
+            int offset = request.Offset;
+            int limit = request.Limit;
+            string? searchTerm = request.SearchTerm?.Trim();
+
+            if (offset < 0)
+                throw new ArgumentException("Offset cannot be negative");
+
+            if (limit < 1 || limit > 100)
+                throw new ArgumentException("Limit must be between 1 and 100");
+
+            // Get paginated products from repository with search
+            var (totalCount, products) = await _productRepository.GetAllProductsPaginated(offset, limit, searchTerm);
+
+            // Map to admin response DTOs
+            var adminProductDTOs = products.Select(p => MapToAdminResponseDTO(p)).ToList();
+
+            // Calculate pagination info
+            int currentPageCount = adminProductDTOs.Count;
+            bool hasMore = (offset + limit) < totalCount;
+
+            return new PaginatedResponse<AdminProductResponseDTO>
+            {
+                TotalCount = totalCount,
+                Offset = offset,
+                Limit = limit,
+                CurrentPageCount = currentPageCount,
+                HasMore = hasMore,
+                Data = adminProductDTOs
+            };
+        }
+
         public async Task<ProductResponseDTO> UpdateProductService(ProductDTO product)
         {
             var existingProduct = await _productRepository.GetProductById(product.Id);

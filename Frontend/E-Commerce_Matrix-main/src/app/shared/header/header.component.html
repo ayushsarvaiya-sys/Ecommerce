@@ -4,14 +4,22 @@
       <h1>E-Commerce</h1>
     </div>
 
-    <!-- 🔥 Show nav links only when logged in -->
+    <!-- Show nav links only when logged in -->
     <nav class="nav-links" *ngIf="isLoggedIn()">
       <a routerLink="/home" routerLinkActive="active">Home</a>
       <a routerLink="/products" routerLinkActive="active">Products</a>
+      <a 
+        *ngIf="currentUser()?.role === 'Admin'" 
+        routerLink="/admin/products" 
+        routerLinkActive="active"
+        class="admin-link"
+      >
+        Manage Products
+      </a>
       <a routerLink="/profile" routerLinkActive="active">Profile</a>
     </nav>
 
-    <!-- 🔥 Show user info only when logged in -->
+    <!-- Show user info only when logged in -->
     <div class="user-info" *ngIf="isLoggedIn()">
       <span class="user-name">{{ currentUser()?.fullName }} ({{ currentUser()?.role }})</span>
       <button class="logout-btn" (click)="logout()">Logout</button>
