@@ -46,14 +46,14 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let product of products" [ngClass]="{ 'low-stock': product.quantity < 10 }">
+        <tr *ngFor="let product of products" [ngClass]="{ 'low-stock': product.stock < 10 }">
           <td>{{ product.id }}</td>
           <td class="name-cell">{{ product.name }}</td>
           <td class="description-cell">{{ product.description }}</td>
           <td>{{ product.categoryName || 'N/A' }}</td>
-          <td class="price-cell">${{ product.price.toFixed(2) }}</td>
-          <td [ngClass]="{ 'low-stock-text': product.quantity < 10 }">
-            {{ product.quantity }}
+          <td class="price-cell">₹{{ product.price.toFixed(2) }}</td>
+          <td [ngClass]="{ 'low-stock-text': product.stock < 10 }">
+            {{ product.stock }}
           </td>
           <td class="actions-cell">
             <button
@@ -165,7 +165,7 @@
           <label>Quantity *</label>
           <input
             type="number"
-            [(ngModel)]="newProduct.quantity"
+            [(ngModel)]="newProduct.stock"
             placeholder="0"
             min="0"
             class="form-input"
@@ -263,7 +263,7 @@
         <label>Add Quantity *</label>
         <input
           type="number"
-          [(ngModel)]="restockData.quantity"
+          [(ngModel)]="restockData.quantityToAdd"
           placeholder="0"
           min="1"
           class="form-input"

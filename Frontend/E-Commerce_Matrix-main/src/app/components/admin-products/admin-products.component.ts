@@ -44,7 +44,7 @@ export class AdminProductsComponent implements OnInit {
     name: '',
     description: '',
     price: 0,
-    quantity: 0,
+    stock: 0,
     categoryId: 1,
   };
 
@@ -58,7 +58,7 @@ export class AdminProductsComponent implements OnInit {
 
   restockData: RestockProductRequest = {
     productId: 0,
-    quantity: 0,
+    quantityToAdd: 0,
   };
 
   deleteProductId = 0;
@@ -164,7 +164,7 @@ export class AdminProductsComponent implements OnInit {
       name: '',
       description: '',
       price: 0,
-      quantity: 0,
+      stock: 0,
       categoryId: 1,
     };
     this.showAddProductModal = true;
@@ -181,7 +181,7 @@ export class AdminProductsComponent implements OnInit {
       !this.newProduct.name ||
       !this.newProduct.description ||
       this.newProduct.price <= 0 ||
-      this.newProduct.quantity < 0
+      this.newProduct.stock < 0
     ) {
       this.errorMessage = 'Please fill in all required fields correctly';
       return;
@@ -249,7 +249,7 @@ export class AdminProductsComponent implements OnInit {
   openRestockModal(product: AdminProductResponse): void {
     this.restockData = {
       productId: product.id,
-      quantity: 0,
+      quantityToAdd: 0,
     };
     this.showRestockModal = true;
     this.cdr.detectChanges();
@@ -261,10 +261,12 @@ export class AdminProductsComponent implements OnInit {
   }
 
   restockProduct(): void {
-    if (this.restockData.quantity <= 0) {
+    if (this.restockData.quantityToAdd <= 0) {
       this.errorMessage = 'Please enter a valid quantity';
       return;
     }
+
+    // this.restockData.productId = this.restockData.productId;
 
     this.productService.restockProduct(this.restockData).subscribe({
       next: (response) => {

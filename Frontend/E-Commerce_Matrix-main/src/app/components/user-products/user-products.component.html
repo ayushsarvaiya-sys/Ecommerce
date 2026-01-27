@@ -41,16 +41,16 @@
         <p class="description">{{ product.description }}</p>
         <div class="product-footer">
           <div class="price-stock">
-            <span class="price">${{ product.price.toFixed(2) }}</span>
+            <span class="price">₹{{ product.price.toFixed(2) }}</span>
             <span
               class="stock"
-              [ngClass]="{ 'low-stock': product.quantity < 10 }"
+              [ngClass]="{ 'low-stock': product.stock < 10 }"
             >
-              Stock: {{ product.quantity }}
+              Stock: {{ product.stock }}
             </span>
           </div>
-          <button class="btn-add-to-cart" [disabled]="product.quantity === 0">
-            {{ product.quantity === 0 ? 'Out of Stock' : 'Add to Cart' }}
+          <button class="btn-add-to-cart" [disabled]="product.stock === 0">
+            {{ product.stock === 0 ? 'Out of Stock' : 'Add to Cart' }}
           </button>
         </div>
       </div>

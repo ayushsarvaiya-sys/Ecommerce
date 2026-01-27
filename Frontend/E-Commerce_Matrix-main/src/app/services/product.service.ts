@@ -7,7 +7,7 @@ export interface Product {
   name: string;
   description: string;
   price: number;
-  quantity: number;
+  stock: number;
   categoryId: number;
   category?: {
     id: number;
@@ -20,9 +20,10 @@ export interface ProductResponse {
   name: string;
   description: string;
   price: number;
-  quantity: number;
+  stock: number;
   categoryId: number;
   categoryName?: string;
+  imageUrl?: string;
 }
 
 export interface AdminProductResponse extends ProductResponse {
@@ -34,7 +35,7 @@ export interface CreateProductRequest {
   name: string;
   description: string;
   price: number;
-  quantity: number;
+  stock: number;
   categoryId: number;
 }
 
@@ -48,7 +49,7 @@ export interface UpdateProductRequest {
 
 export interface RestockProductRequest {
   productId: number;
-  quantity: number;
+  quantityToAdd: number;
 }
 
 export interface PaginatedResponse<T> {
@@ -141,6 +142,7 @@ export class ProductService {
   restockProduct(
     request: RestockProductRequest
   ): Observable<ApiResponse<ProductResponse>> {
+    console.log('Restock request:', request);
     return this.http.put<ApiResponse<ProductResponse>>(
       `${this.apiUrl}/Restock`,
       request
