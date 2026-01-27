@@ -9,6 +9,7 @@ import {
   CreateProductRequest,
   UpdateProductRequest,
   RestockProductRequest,
+  Category,
 } from '../../services/product.service';
 
 @Component({
@@ -23,6 +24,10 @@ export class AdminProductsComponent implements OnInit {
   isLoading = false;
   errorMessage = '';
   successMessage = '';
+
+  // Categories
+  categories: Category[] = [];
+  categoriesLoading = false;
 
   // Pagination properties
   currentPage = 1;
@@ -46,6 +51,7 @@ export class AdminProductsComponent implements OnInit {
     price: 0,
     stock: 0,
     categoryId: 1,
+    imageUrl: '',
   };
 
   editProduct: UpdateProductRequest = {
@@ -54,6 +60,7 @@ export class AdminProductsComponent implements OnInit {
     description: '',
     price: 0,
     categoryId: 1,
+    imageUrl: '',
   };
 
   restockData: RestockProductRequest = {
@@ -63,13 +70,213 @@ export class AdminProductsComponent implements OnInit {
 
   deleteProductId = 0;
 
+  // Image upload properties
+  selectedImageFile: File | null = null;
+  selectedImageForEdit: File | null = null;
+  imagePreviewUrl: string | ArrayBuffer | null = null;
+  imagePreviewUrlEdit: string | ArrayBuffer | null = null;
+  isUploadingImage = false;
+  uploadedImageUrl = '';
+  uploadedImageUrlEdit = '';
+
   constructor(
     private productService: ProductService,
     private cdr: ChangeDetectorRef
   ) {}
 
+  // Image Upload Methods
+  onImageSelected(event: any): void {
+    const file: File = event.target.files[0];
+    if (file) {
+      this.selectedImageFile = file;
+      
+      // Preview image
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.imagePreviewUrl = e.target.result;
+        this.cdr.detectChanges();
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  onImageSelectedEdit(event: any): void {
+    const file: File = event.target.files[0];
+    if (file) {
+      this.selectedImageForEdit = file;
+      
+      // Preview image
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.imagePreviewUrlEdit = e.target.result;
+        this.cdr.detectChanges();
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  uploadImageAndAddProduct(): void {
+    if (!this.selectedImageFile) {
+      this.errorMessage = 'Please select an image';
+      return;
+    }
+
+    this.uploadedImageUrl = '';
+    this.isUploadingImage = true;
+    this.errorMessage = '';
+
+    // Step 1: Get Cloudinary configuration from backend
+    this.productService.getCloudinaryConfig().subscribe({
+      next: (response) => {
+        if (response?.data?.cloudName && response?.data?.uploadPreset) {
+          const cloudName = response.data.cloudName;
+          const uploadPreset = response.data.uploadPreset;
+
+          // Step 2: Upload image directly to Cloudinary
+          this.productService.uploadImageToCloudinary(this.selectedImageFile!, cloudName, uploadPreset).subscribe({
+            next: (cloudinaryResponse) => {
+              console.log('Cloudinary response:', cloudinaryResponse);
+              
+              // Get the secure URL from Cloudinary response
+              const imageUrl = cloudinaryResponse.secure_url || cloudinaryResponse.url;
+              
+              if (imageUrl) {
+                this.uploadedImageUrl = imageUrl;
+                this.newProduct.imageUrl = imageUrl;
+                this.successMessage = 'Image uploaded successfully!';
+                this.isUploadingImage = false;
+                this.cdr.detectChanges();
+                
+                // Auto-submit the product form
+                // setTimeout(() => {
+                //   this.addProduct();
+                // }, 500);
+              } else {
+                this.errorMessage = 'Failed to get image URL from Cloudinary';
+                this.isUploadingImage = false;
+                this.cdr.detectChanges();
+              }
+            },
+            error: (error) => {
+              console.error('Cloudinary upload error:', error);
+              this.errorMessage = 'Failed to upload image: ' + (error.error?.message || error.message || 'Unknown error');
+              this.isUploadingImage = false;
+              this.cdr.detectChanges();
+            }
+          });
+        } else {
+          this.errorMessage = 'Failed to get Cloudinary configuration';
+          this.isUploadingImage = false;
+          this.cdr.detectChanges();
+        }
+      },
+      error: (error) => {
+        console.error('Cloudinary config error:', error);
+        this.errorMessage = 'Failed to get Cloudinary config: ' + (error.error?.message || error.message || 'Unknown error');
+        this.isUploadingImage = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  uploadImageAndUpdateProduct(): void {
+    if (!this.selectedImageForEdit) {
+      this.errorMessage = 'Please select an image';
+      return;
+    }
+
+    this.uploadedImageUrlEdit = '';
+    this.isUploadingImage = true;
+    this.errorMessage = '';
+
+    // Step 1: Get Cloudinary configuration from backend
+    this.productService.getCloudinaryConfig().subscribe({
+      next: (response) => {
+        if (response?.data?.cloudName && response?.data?.uploadPreset) {
+          const cloudName = response.data.cloudName;
+          const uploadPreset = response.data.uploadPreset;
+
+          // Step 2: Upload image directly to Cloudinary
+          this.productService.uploadImageToCloudinary(this.selectedImageForEdit!, cloudName, uploadPreset).subscribe({
+            next: (cloudinaryResponse) => {
+              console.log('Cloudinary response:', cloudinaryResponse);
+              
+              // Get the secure URL from Cloudinary response
+              const imageUrl = cloudinaryResponse.secure_url || cloudinaryResponse.url;
+              
+              if (imageUrl) {
+                this.uploadedImageUrlEdit = imageUrl;
+                this.editProduct.imageUrl = imageUrl;
+                this.successMessage = 'Image uploaded successfully!';
+                this.isUploadingImage = false;
+                this.cdr.detectChanges();
+                
+                // Auto-submit the product form
+                setTimeout(() => {
+                  this.updateProduct();
+                }, 500);
+              } else {
+                this.errorMessage = 'Failed to get image URL from Cloudinary';
+                this.isUploadingImage = false;
+                this.cdr.detectChanges();
+              }
+            },
+            error: (error) => {
+              console.error('Cloudinary upload error:', error);
+              this.errorMessage = 'Failed to upload image: ' + (error.error?.message || error.message || 'Unknown error');
+              this.isUploadingImage = false;
+              this.cdr.detectChanges();
+            }
+          });
+        } else {
+          this.errorMessage = 'Failed to get Cloudinary configuration';
+          this.isUploadingImage = false;
+          this.cdr.detectChanges();
+        }
+      },
+      error: (error) => {
+        console.error('Cloudinary config error:', error);
+        this.errorMessage = 'Failed to get Cloudinary config: ' + (error.error?.message || error.message || 'Unknown error');
+        this.isUploadingImage = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  clearImageSelection(): void {
+    this.selectedImageFile = null;
+    this.imagePreviewUrl = null;
+    this.uploadedImageUrl = '';
+    this.cdr.detectChanges();
+  }
+
+  clearImageSelectionEdit(): void {
+    this.selectedImageForEdit = null;
+    this.imagePreviewUrlEdit = null;
+    this.uploadedImageUrlEdit = '';
+    this.cdr.detectChanges();
+  }
+
   ngOnInit(): void {
+    this.loadCategories();
     this.loadProducts();
+  }
+
+  loadCategories(): void {
+    this.categoriesLoading = true;
+    this.productService.getAllCategories().subscribe({
+      next: (response) => {
+        if (response?.data) {
+          this.categories = response.data;
+        }
+        this.categoriesLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Error loading categories:', error);
+        this.categoriesLoading = false;
+      }
+    });
   }
 
   loadProducts(page: number = 1): void {

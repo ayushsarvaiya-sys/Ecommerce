@@ -14,9 +14,13 @@ export class HttpErrorInterceptor implements HttpInterceptor {
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
     // Clone request and add credentials for cookie support
     console.log('Interceptor running'); 
-    request = request.clone({
-      withCredentials: true
-    });
+    
+    // Don't add credentials to Cloudinary requests
+    if (!request.url.includes('cloudinary.com')) {
+      request = request.clone({
+        withCredentials: true
+      });
+    }
     
     return next.handle(request).pipe(
       catchError((error: HttpErrorResponse) => {

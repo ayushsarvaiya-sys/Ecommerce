@@ -37,6 +37,7 @@ export interface CreateProductRequest {
   price: number;
   stock: number;
   categoryId: number;
+  imageUrl?: string;
 }
 
 export interface UpdateProductRequest {
@@ -45,6 +46,7 @@ export interface UpdateProductRequest {
   description: string;
   price: number;
   categoryId: number;
+  imageUrl?: string;
 }
 
 export interface RestockProductRequest {
@@ -67,13 +69,53 @@ export interface ApiResponse<T> {
   message: string;
 }
 
+export interface PresignedUrlResponse {
+  presignedUrl: string;
+  publicId: string;
+  timestamp: number;
+}
+
+export interface CloudinaryConfig {
+  cloudName: string;
+  uploadPreset: string;
+}
+
+export interface ImageUploadRequest {
+  imageName: string;
+  resourceType?: string;
+}
+
+export interface Category {
+  id: number;
+  name: string;
+  description?: string;
+}
+
 @Injectable({
   providedIn: 'root',
 })
 export class ProductService {
   private apiUrl = 'https://localhost:7067/api/Product';
+  private cloudinaryUrl = 'https://localhost:7067/api/Cloudinary';
 
   constructor(private http: HttpClient) {}
+
+  // Cloudinary Image Upload Methods
+  getCloudinaryConfig(): Observable<ApiResponse<CloudinaryConfig>> {
+    return this.http.get<ApiResponse<CloudinaryConfig>>(
+      `${this.cloudinaryUrl}/GetUploadConfig`
+    );
+  }
+
+  uploadImageToCloudinary(file: File, cloudName: string, uploadPreset: string): Observable<any> {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', uploadPreset);
+    
+    const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
+    
+    return this.http.post<any>(uploadUrl, formData);
+  }
 
   // User endpoints
   getProductsPaginated(
@@ -146,6 +188,13 @@ export class ProductService {
     return this.http.put<ApiResponse<ProductResponse>>(
       `${this.apiUrl}/Restock`,
       request
+    );
+  }
+
+  // Category endpoints
+  getAllCategories(): Observable<ApiResponse<Category[]>> {
+    return this.http.get<ApiResponse<Category[]>>(
+      `https://localhost:7067/api/Category/GetAll`
     );
   }
 }

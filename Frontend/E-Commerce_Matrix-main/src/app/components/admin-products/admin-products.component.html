@@ -173,21 +173,68 @@
         </div>
       </div>
       <div class="form-group">
-        <label>Category ID *</label>
-        <input
-          type="number"
-          [(ngModel)]="newProduct.categoryId"
-          placeholder="1"
-          min="1"
-          class="form-input"
-        />
+        <label>Category *</label>
+        <select [(ngModel)]="newProduct.categoryId" class="form-input">
+          <option value="" disabled>Select a category</option>
+          <option *ngFor="let category of categories" [value]="category.id">
+            {{ category.name }}
+          </option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Product Image *</label>
+        <div class="image-upload-section">
+          <input
+            type="file"
+            #imageInput
+            (change)="onImageSelected($event)"
+            accept="image/*"
+            class="file-input"
+            id="imageInputAdd"
+          />
+          <label for="imageInputAdd" class="file-label">
+            <span class="file-icon">📁</span>
+            <span class="file-text">{{ selectedImageFile ? selectedImageFile.name : 'Choose Image' }}</span>
+          </label>
+          
+          <!-- Image Preview -->
+          <div *ngIf="imagePreviewUrl" class="image-preview">
+            <img [src]="imagePreviewUrl" alt="Preview" />
+            <button type="button" (click)="clearImageSelection()" class="btn-clear-image">
+              ✕
+            </button>
+          </div>
+
+          <!-- Upload Button -->
+          <div *ngIf="selectedImageFile && !uploadedImageUrl" class="upload-actions">
+            <button
+              type="button"
+              (click)="uploadImageAndAddProduct()"
+              [disabled]="isUploadingImage"
+              class="btn-upload-image"
+            >
+              {{ isUploadingImage ? 'Uploading...' : '⬆ Upload Image' }}
+            </button>
+          </div>
+
+          <!-- Uploaded Status -->
+          <div *ngIf="uploadedImageUrl" class="upload-success">
+            <p>✓ Image uploaded successfully</p>
+          </div>
+        </div>
       </div>
     </div>
     <div class="modal-footer">
       <button (click)="closeAddProductModal()" class="btn-cancel">
         Cancel
       </button>
-      <button (click)="addProduct()" class="btn-submit">Add Product</button>
+      <button 
+        (click)="addProduct()" 
+        [disabled]="!uploadedImageUrl || isUploadingImage"
+        class="btn-submit"
+      >
+        Add Product
+      </button>
     </div>
   </div>
 </div>
@@ -231,16 +278,62 @@
           />
         </div>
         <div class="form-group">
-          <label>Category ID *</label>
-          <input
-            type="number"
-            [(ngModel)]="editProduct.categoryId"
-            placeholder="1"
-            min="1"
-            class="form-input"
-          />
+          <label>Category *</label>
+          <select [(ngModel)]="editProduct.categoryId" class="form-input">
+            <option value="" disabled>Select a category</option>
+            <option *ngFor="let category of categories" [value]="category.id">
+              {{ category.name }}
+            </option>
+          </select>
         </div>
       </div>
+      <div class="form-group">
+        <label>Product Image</label>
+        <div class="image-upload-section">
+          <input
+            type="file"
+            #imageInputEdit
+            (change)="onImageSelectedEdit($event)"
+            accept="image/*"
+            class="file-input"
+            id="imageInputEdit"
+          />
+          <label for="imageInputEdit" class="file-label">
+            <span class="file-icon">📁</span>
+            <span class="file-text">{{ selectedImageForEdit ? selectedImageForEdit.name : 'Choose Image' }}</span>
+          </label>
+          
+          <!-- Image Preview -->
+          <div *ngIf="imagePreviewUrlEdit" class="image-preview">
+            <img [src]="imagePreviewUrlEdit" alt="Preview" />
+            <button type="button" (click)="clearImageSelectionEdit()" class="btn-clear-image">
+              ✕ Clear
+            </button>
+          </div>
+
+          <!-- Upload Button -->
+          <div *ngIf="selectedImageForEdit && !uploadedImageUrlEdit" class="upload-actions">
+            <button
+              type="button"
+              (click)="uploadImageAndUpdateProduct()"
+              [disabled]="isUploadingImage"
+              class="btn-upload-image"
+            >
+              {{ isUploadingImage ? 'Uploading...' : '⬆ Upload Image' }}
+            </button>
+          </div>
+
+          <!-- Uploaded Status -->
+          <div *ngIf="uploadedImageUrlEdit" class="upload-success">
+            <p>✓ Image uploaded successfully</p>
+          </div>
+
+          <!-- Current Image -->
+          <div *ngIf="editProduct.imageUrl && !selectedImageForEdit" class="current-image">
+            <p>Current Image:</p>
+            <img [src]="editProduct.imageUrl" alt="Current product image" />
+          </div>
+        </div>
     </div>
     <div class="modal-footer">
       <button (click)="closeEditProductModal()" class="btn-cancel">
