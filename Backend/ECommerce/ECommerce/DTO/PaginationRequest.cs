@@ -12,5 +12,25 @@ namespace ECommerce.DTO
 
         [StringLength(100, ErrorMessage = "Search term cannot exceed 100 characters")]
         public string? SearchTerm { get; set; }
+
+        // Filter properties
+        public int? CategoryId { get; set; }
+
+        [Range(0, double.MaxValue, ErrorMessage = "Minimum price must be greater than or equal to 0")]
+        public decimal? MinPrice { get; set; }
+
+        [Range(0, double.MaxValue, ErrorMessage = "Maximum price must be greater than or equal to 0")]
+        public decimal? MaxPrice { get; set; }
+
+        // Admin only filters
+        public int? MinQuantity { get; set; }
+
+        public int? MaxQuantity { get; set; }
+
+        public string? SortByPrice { get; set; } // "asc" or "desc"
+
+        public string? SortByQuantity { get; set; } // "asc" or "desc"
+
+        public bool IncludeDeleted { get; set; } = false; // Admin only: to show deleted products
     }
 }

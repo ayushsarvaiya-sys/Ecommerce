@@ -11,6 +11,7 @@ namespace ECommerce.Interfaces
         Task<PaginatedResponse<AdminProductResponseDTO>> GetProductsAdminPaginatedService(PaginationRequest request);
         Task<ProductResponseDTO> UpdateProductService(ProductDTO product);
         Task<bool> DeleteProductService(int id);
+        Task<bool> RestoreProductService(int id);
         Task<IEnumerable<ProductResponseDTO>> GetProductsByCategoryService(int categoryId);
         Task<ProductResponseDTO> RestockProductService(RestockProductRequest request);
     }

@@ -1,20 +1,132 @@
 <div class="user-products-container">
   <div class="products-header">
     <h1>Products</h1>
-    <div class="search-bar">
-      <input
-        type="text"
-        placeholder="Search products..."
-        [(ngModel)]="searchTerm"
-        (keyup.enter)="onSearch()"
-        class="search-input"
-      />
-      <button (click)="onSearch()" class="btn-search">Search</button>
-      <button (click)="clearSearch()" class="btn-clear">Clear</button>
+  </div>
+
+  <!-- Search Bar -->
+  <div class="search-bar">
+    <input
+      type="text"
+      placeholder="Search by product name or ID..."
+      [(ngModel)]="searchTerm"
+      (keyup.enter)="onSearch()"
+      class="search-input"
+    />
+    <button (click)="onSearch()" class="btn-search">Search</button>
+    <button (click)="clearSearch()" class="btn-clear">Clear</button>
+  </div>
+
+  <!-- Filters Section -->
+  <div class="filters-section">
+    <h3>Filters</h3>
+    <div class="filters-grid">
+      <!-- Category Filter -->
+      <!-- <div class="filter-group">
+        <label>Category</label>
+        <select [(ngModel)]="selectedCategoryId" class="filter-input">
+          <option [value]="null">All Categories</option>
+          <option *ngFor="let category of categories" [value]="category.id">
+            {{ category.name }}
+          </option>
+        </select>
+      </div> -->
+
+      <!-- Price Range Filter with Customized Slider -->
+      <!-- Price Range Filter with Customized Slider -->
+      <div class="filter-group slider-group">
+        <div class="price-range-section">
+          <!-- Price Header: Left and Right Sections -->
+          <div class="price-header">
+            <!-- Left: Price Label and Values -->
+            <div class="price-left">
+              <label>Price Range (₹)</label>
+              <div class="slider-values">
+                <span>₹{{ minPrice.toLocaleString('en-IN') }} - ₹{{ maxPrice.toLocaleString('en-IN') }}</span>
+              </div>
+            </div>
+
+            <!-- Right: Sort by Price (Admin Only) -->
+            <div class="sort-price-section" *ngIf="userRole === 'Admin'">
+              <label>Sort by Price</label>
+              <select [(ngModel)]="sortByPrice" class="filter-input">
+                <option value="">No Sort</option>
+                <option value="asc">Low to High</option>
+                <option value="desc">High to Low</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Price Slider: Full Width Below -->
+          <ngx-slider
+            [(value)]="minPrice"
+            [(highValue)]="maxPrice"
+            [options]="priceSliderOptions"
+          ></ngx-slider>
+        </div>
+      </div>
+
+      <!-- Admin-Only Filters -->
+      <ng-container *ngIf="userRole === 'Admin'">
+        <!-- Bottom: Quantity Range Filter (Admin Only) with Customized Slider -->
+        <div class="filter-group slider-group">
+          <div class="quantity-range-section">
+            <!-- Quantity Header: Left and Right Sections -->
+            <div class="quantity-header">
+              <!-- Left: Quantity Label and Values -->
+              <div class="quantity-left">
+                <label>Quantity Range</label>
+                <div class="slider-values">
+                  <span>{{ minQuantity }} - {{ maxQuantity }} items</span>
+                </div>
+              </div>
+
+              <!-- Right: Sort by Quantity -->
+              <div class="sort-quantity-section">
+                <label>Sort by Quantity</label>
+                <select [(ngModel)]="sortByQuantity" class="filter-input">
+                  <option value="">No Sort</option>
+                  <option value="asc">Lowest Stock First</option>
+                  <option value="desc">Highest Stock First</option>
+                </select>
+              </div>
+            </div>
+
+            <ngx-slider
+              [(value)]="minQuantity"
+              [(highValue)]="maxQuantity"
+              [options]="quantitySliderOptions"
+            ></ngx-slider>
+          </div>
+        </div>
+        
+        <div class="filter-group">
+        <label>Category</label>
+        <select [(ngModel)]="selectedCategoryId" class="filter-input">
+          <option [value]="null">All Categories</option>
+          <option *ngFor="let category of categories" [value]="category.id">
+            {{ category.name }}
+          </option>
+        </select>
+      </div>
+
+        <!-- Show Deleted Products (Admin Only) -->
+        <div class="filter-group checkbox-group">
+          <label>
+            <input type="checkbox" [(ngModel)]="includeDeleted" />
+            Show Deleted Products
+          </label>
+        </div>
+      </ng-container>
+    </div>
+
+    <!-- Filter Buttons -->
+    <div class="filter-buttons">
+      <button (click)="applyFilters()" class="btn-apply-filters">Apply Filters</button>
+      <button (click)="resetFilters()" class="btn-reset-filters">Reset All</button>
     </div>
   </div>
 
-  <!-- Error Message -->
+  <!-- Messages -->
   <div *ngIf="errorMessage" class="alert alert-error">
     {{ errorMessage }}
   </div>

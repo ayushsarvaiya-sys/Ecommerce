@@ -64,7 +64,13 @@ namespace ECommerce.Controllers
         }
 
         [HttpGet("GetPaginated")]
-        public async Task<IActionResult> GetProductsPaginated([FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] string? search = null)
+        public async Task<IActionResult> GetProductsPaginated(
+            [FromQuery] int page = 1, 
+            [FromQuery] int pageSize = 10, 
+            [FromQuery] string? search = null,
+            [FromQuery] int? categoryId = null,
+            [FromQuery] decimal? minPrice = null,
+            [FromQuery] decimal? maxPrice = null)
         {
             try
             {
@@ -82,7 +88,11 @@ namespace ECommerce.Controllers
                 { 
                     Offset = offset, 
                     Limit = pageSize,
-                    SearchTerm = search
+                    SearchTerm = search,
+                    CategoryId = categoryId,
+                    MinPrice = minPrice,
+                    MaxPrice = maxPrice,
+                    IncludeDeleted = false
                 };
                 var result = await _productService.GetProductsPaginatedService(request);
                 
@@ -96,7 +106,18 @@ namespace ECommerce.Controllers
 
         [Authorize(Roles = "Admin")]
         [HttpGet("GetPaginatedAdmin")]
-        public async Task<IActionResult> GetProductsAdminPaginated([FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] string? search = null)
+        public async Task<IActionResult> GetProductsAdminPaginated(
+            [FromQuery] int page = 1, 
+            [FromQuery] int pageSize = 10, 
+            [FromQuery] string? search = null,
+            [FromQuery] int? categoryId = null,
+            [FromQuery] decimal? minPrice = null,
+            [FromQuery] decimal? maxPrice = null,
+            [FromQuery] int? minQuantity = null,
+            [FromQuery] int? maxQuantity = null,
+            [FromQuery] string? sortByPrice = null,
+            [FromQuery] string? sortByQuantity = null,
+            [FromQuery] bool includeDeleted = false)
         {
             try
             {
@@ -114,7 +135,15 @@ namespace ECommerce.Controllers
                 { 
                     Offset = offset, 
                     Limit = pageSize,
-                    SearchTerm = search
+                    SearchTerm = search,
+                    CategoryId = categoryId,
+                    MinPrice = minPrice,
+                    MaxPrice = maxPrice,
+                    MinQuantity = minQuantity,
+                    MaxQuantity = maxQuantity,
+                    SortByPrice = sortByPrice,
+                    SortByQuantity = sortByQuantity,
+                    IncludeDeleted = includeDeleted
                 };
                 var result = await _productService.GetProductsAdminPaginatedService(request);
                 
@@ -152,6 +181,24 @@ namespace ECommerce.Controllers
                     return NotFound(new ApiError(404, "Product not found"));
 
                 return Ok(new ApiResponse<bool>(200, result, "Product deleted successfully"));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new ApiError(400, ex.Message));
+            }
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost("Restore/{id}")]
+        public async Task<IActionResult> RestoreProduct(int id)
+        {
+            try
+            {
+                var result = await _productService.RestoreProductService(id);
+                if (!result)
+                    return NotFound(new ApiError(404, "Product not found"));
+
+                return Ok(new ApiResponse<bool>(200, result, "Product restored successfully"));
             }
             catch (Exception ex)
             {

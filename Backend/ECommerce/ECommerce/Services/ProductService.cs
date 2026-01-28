@@ -77,32 +77,21 @@ namespace ECommerce.Services
             if (request == null)
                 throw new ArgumentException("Pagination request is required");
 
-            // Validate parameters
-            int offset = request.Offset;
-            int limit = request.Limit;
-            string? searchTerm = request.SearchTerm?.Trim();
-
-            if (offset < 0)
-                throw new ArgumentException("Offset cannot be negative");
-
-            if (limit < 1 || limit > 100)
-                throw new ArgumentException("Limit must be between 1 and 100");
-
-            // Get paginated products from repository with search
-            var (totalCount, products) = await _productRepository.GetAllProductsPaginated(offset, limit, searchTerm);
+            // Get paginated products from repository with filters
+            var (totalCount, products) = await _productRepository.GetAllProductsPaginatedWithFilters(request, isAdmin: false);
 
             // Map to response DTOs
             var productDTOs = products.Select(p => MapToResponseDTO(p)).ToList();
 
             // Calculate pagination info
             int currentPageCount = productDTOs.Count;
-            bool hasMore = (offset + limit) < totalCount;
+            bool hasMore = (request.Offset + request.Limit) < totalCount;
 
             return new PaginatedResponse<ProductResponseDTO>
             {
                 TotalCount = totalCount,
-                Offset = offset,
-                Limit = limit,
+                Offset = request.Offset,
+                Limit = request.Limit,
                 CurrentPageCount = currentPageCount,
                 HasMore = hasMore,
                 Data = productDTOs
@@ -119,32 +108,21 @@ namespace ECommerce.Services
             if (request == null)
                 throw new ArgumentException("Pagination request is required");
 
-            // Validate parameters
-            int offset = request.Offset;
-            int limit = request.Limit;
-            string? searchTerm = request.SearchTerm?.Trim();
-
-            if (offset < 0)
-                throw new ArgumentException("Offset cannot be negative");
-
-            if (limit < 1 || limit > 100)
-                throw new ArgumentException("Limit must be between 1 and 100");
-
-            // Get paginated products from repository with search
-            var (totalCount, products) = await _productRepository.GetAllProductsPaginated(offset, limit, searchTerm);
+            // Get paginated products from repository with filters (admin can see deleted products)
+            var (totalCount, products) = await _productRepository.GetAllProductsPaginatedWithFilters(request, isAdmin: true);
 
             // Map to admin response DTOs
             var adminProductDTOs = products.Select(p => MapToAdminResponseDTO(p)).ToList();
 
             // Calculate pagination info
             int currentPageCount = adminProductDTOs.Count;
-            bool hasMore = (offset + limit) < totalCount;
+            bool hasMore = (request.Offset + request.Limit) < totalCount;
 
             return new PaginatedResponse<AdminProductResponseDTO>
             {
                 TotalCount = totalCount,
-                Offset = offset,
-                Limit = limit,
+                Offset = request.Offset,
+                Limit = request.Limit,
                 CurrentPageCount = currentPageCount,
                 HasMore = hasMore,
                 Data = adminProductDTOs
@@ -168,6 +146,11 @@ namespace ECommerce.Services
         public async Task<bool> DeleteProductService(int id)
         {
             return await _productRepository.DeleteProduct(id);
+        }
+
+        public async Task<bool> RestoreProductService(int id)
+        {
+            return await _productRepository.RestoreProduct(id);
         }
 
         public async Task<IEnumerable<ProductResponseDTO>> GetProductsByCategoryService(int categoryId)

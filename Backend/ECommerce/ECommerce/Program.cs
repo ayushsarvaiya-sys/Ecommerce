@@ -1,3 +1,4 @@
+using ECommerce.Config;
 using ECommerce.Database;
 using ECommerce.Interfaces;
 using ECommerce.Mappings;
@@ -97,11 +98,17 @@ builder.Services.AddAutoMapper(cfg =>
     cfg.AddProfile<UserProfile>();
 });
 
+// Configure Cloudinary Settings
+builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("Cloudinary"));
+
 // DI registration
 // Auth
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
+
+// Cloudinary
+builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
 
 // Category
 builder.Services.AddScoped<ICategoryService, CategoryService>();

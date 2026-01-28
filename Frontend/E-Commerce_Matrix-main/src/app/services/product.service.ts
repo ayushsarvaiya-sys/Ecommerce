@@ -29,6 +29,7 @@ export interface ProductResponse {
 export interface AdminProductResponse extends ProductResponse {
   createdDate?: string;
   updatedDate?: string;
+  isDeleted?: boolean;
 }
 
 export interface CreateProductRequest {
@@ -121,11 +122,23 @@ export class ProductService {
   getProductsPaginated(
     page: number = 1,
     pageSize: number = 10,
-    search?: string
+    search?: string,
+    categoryId?: number,
+    minPrice?: number,
+    maxPrice?: number
   ): Observable<ApiResponse<PaginatedResponse<ProductResponse>>> {
     let url = `${this.apiUrl}/GetPaginated?page=${page}&pageSize=${pageSize}`;
     if (search) {
       url += `&search=${encodeURIComponent(search)}`;
+    }
+    if (categoryId && categoryId > 0) {
+      url += `&categoryId=${categoryId}`;
+    }
+    if (minPrice !== undefined && minPrice >= 0) {
+      url += `&minPrice=${minPrice}`;
+    }
+    if (maxPrice !== undefined && maxPrice >= 0) {
+      url += `&maxPrice=${maxPrice}`;
     }
     return this.http.get<ApiResponse<PaginatedResponse<ProductResponse>>>(url);
   }
@@ -148,12 +161,43 @@ export class ProductService {
   getProductsAdminPaginated(
     page: number = 1,
     pageSize: number = 10,
-    search?: string
+    search?: string,
+    categoryId?: number,
+    minPrice?: number,
+    maxPrice?: number,
+    minQuantity?: number,
+    maxQuantity?: number,
+    sortByPrice?: string,
+    sortByQuantity?: string,
+    includeDeleted: boolean = false
   ): Observable<ApiResponse<PaginatedResponse<AdminProductResponse>>> {
     let url = `${this.apiUrl}/GetPaginatedAdmin?page=${page}&pageSize=${pageSize}`;
     if (search) {
       url += `&search=${encodeURIComponent(search)}`;
     }
+    if (categoryId && categoryId > 0) {
+      url += `&categoryId=${categoryId}`;
+    }
+    if (minPrice !== undefined && minPrice >= 0) {
+      url += `&minPrice=${minPrice}`;
+    }
+    if (maxPrice !== undefined && maxPrice >= 0) {
+      url += `&maxPrice=${maxPrice}`;
+    }
+    if (minQuantity !== undefined && minQuantity >= 0) {
+      url += `&minQuantity=${minQuantity}`;
+    }
+    if (maxQuantity !== undefined && maxQuantity >= 0) {
+      url += `&maxQuantity=${maxQuantity}`;
+    }
+    if (sortByPrice) {
+      url += `&sortByPrice=${encodeURIComponent(sortByPrice)}`;
+    }
+    if (sortByQuantity) {
+      url += `&sortByQuantity=${encodeURIComponent(sortByQuantity)}`;
+    }
+    // Always include includeDeleted parameter (both true and false)
+    url += `&includeDeleted=${includeDeleted}`;
     return this.http.get<ApiResponse<PaginatedResponse<AdminProductResponse>>>(url);
   }
 
@@ -178,6 +222,13 @@ export class ProductService {
   deleteProduct(id: number): Observable<ApiResponse<boolean>> {
     return this.http.delete<ApiResponse<boolean>>(
       `${this.apiUrl}/Delete/${id}`
+    );
+  }
+
+  restoreProduct(id: number): Observable<ApiResponse<boolean>> {
+    return this.http.post<ApiResponse<boolean>>(
+      `${this.apiUrl}/Restore/${id}`,
+      {}
     );
   }
 

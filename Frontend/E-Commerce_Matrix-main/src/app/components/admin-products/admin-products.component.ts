@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ChangeDetectorRef } from '@angular/core';
+import { NgxSliderModule, Options, LabelType } from '@angular-slider/ngx-slider';
 import {
   ProductService,
   AdminProductResponse,
@@ -15,7 +16,7 @@ import {
 @Component({
   selector: 'app-admin-products',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, NgxSliderModule],
   templateUrl: './admin-products.component.html',
   styleUrls: ['./admin-products.component.css'],
 })
@@ -37,6 +38,32 @@ export class AdminProductsComponent implements OnInit {
 
   // Search
   searchTerm = '';
+
+  // Filters
+  selectedCategoryId: number | null = null;
+  minPrice = 0;
+  maxPrice = 20000;
+  minQuantity = 0;
+  maxQuantity = 1000;
+  sortByPrice: string = ''; // '' | 'asc' | 'desc'
+  sortByQuantity: string = ''; // '' | 'asc' | 'desc'
+  includeDeleted = false;
+
+  // Slider options
+  priceSliderOptions: Options = {
+    floor: 0,
+    ceil: 20000,
+    step: 10,
+    translate: (value: number, label: LabelType): string => {
+      return '₹' + value.toLocaleString('en-IN');
+    },
+  };
+
+  quantitySliderOptions: Options = {
+    floor: 0,
+    ceil: 1000,
+    step: 1,
+  };
 
   // Modal states
   showAddProductModal = false;
@@ -285,7 +312,19 @@ export class AdminProductsComponent implements OnInit {
     this.currentPage = page;
 
     this.productService
-      .getProductsAdminPaginated(page, this.pageSize, this.searchTerm)
+      .getProductsAdminPaginated(
+        page,
+        this.pageSize,
+        this.searchTerm || undefined,
+        this.selectedCategoryId || undefined,
+        this.minPrice !== undefined ? this.minPrice : undefined,
+        this.maxPrice !== undefined ? this.maxPrice : undefined,
+        this.minQuantity !== undefined && this.minQuantity > 0 ? this.minQuantity : undefined,
+        this.maxQuantity !== undefined && this.maxQuantity < 10000 ? this.maxQuantity : undefined,
+        this.sortByPrice || undefined,
+        this.sortByQuantity || undefined,
+        this.includeDeleted
+      )
       .subscribe({
         next: (response) => {
           console.log('API Response:', response);
@@ -329,6 +368,26 @@ export class AdminProductsComponent implements OnInit {
   clearSearch(): void {
     this.searchTerm = '';
     this.onSearch();
+  }
+
+  applyFilters(): void {
+    this.currentPage = 1;
+    this.loadProducts(1);
+  }
+
+  resetFilters(): void {
+    this.searchTerm = '';
+    this.selectedCategoryId = null;
+    this.minPrice = 0;
+    this.maxPrice = 1000000;
+    this.minQuantity = 0;
+    this.maxQuantity = 10000;
+    this.sortByPrice = '';
+    this.sortByQuantity = '';
+    this.includeDeleted = false;
+    this.currentPage = 1;
+    this.loadProducts(1);
+    this.cdr.detectChanges();
   }
 
   previousPage(): void {
@@ -514,6 +573,22 @@ export class AdminProductsComponent implements OnInit {
       error: (error) => {
         this.errorMessage = 'Failed to delete product. ' + (error.error?.message || '');
         console.error('Error deleting product:', error);
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  restoreProduct(productId: number): void {
+    this.productService.restoreProduct(productId).subscribe({
+      next: (response) => {
+        this.successMessage = 'Product restored successfully!';
+        this.loadProducts(this.currentPage);
+        this.cdr.detectChanges();
+        setTimeout(() => (this.successMessage = ''), 3000);
+      },
+      error: (error) => {
+        this.errorMessage = 'Failed to restore product. ' + (error.error?.message || '');
+        console.error('Error restoring product:', error);
         this.cdr.detectChanges();
       },
     });
