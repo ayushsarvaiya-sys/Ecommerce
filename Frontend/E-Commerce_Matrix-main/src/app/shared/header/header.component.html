@@ -16,6 +16,14 @@
       >
         Manage Products
       </a>
+      <a 
+        *ngIf="currentUser()?.role === 'Admin'" 
+        routerLink="/admin/categories" 
+        routerLinkActive="active"
+        class="admin-link"
+      >
+        Manage Categories
+      </a>
       <a routerLink="/profile" routerLinkActive="active">Profile</a>
     </nav>
 

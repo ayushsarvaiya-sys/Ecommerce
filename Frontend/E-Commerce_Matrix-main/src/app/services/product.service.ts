@@ -90,6 +90,9 @@ export interface Category {
   id: number;
   name: string;
   description?: string;
+  isDeleted?: boolean;
+  createdDate?: string;
+  updatedDate?: string;
 }
 
 @Injectable({
@@ -243,9 +246,53 @@ export class ProductService {
   }
 
   // Category endpoints
+  private categoryUrl = 'https://localhost:7067/api/Category';
+
   getAllCategories(): Observable<ApiResponse<Category[]>> {
     return this.http.get<ApiResponse<Category[]>>(
-      `https://localhost:7067/api/Category/GetAll`
+      `${this.categoryUrl}/GetAll`
+    );
+  }
+
+  getAllCategoriesAdmin(includeDeleted: boolean = false): Observable<ApiResponse<Category[]>> {
+    const url = `${this.categoryUrl}/GetAllAdmin?includeDeleted=${includeDeleted}`;
+    return this.http.get<ApiResponse<Category[]>>(url);
+  }
+
+  addCategory(
+    category: { name: string; description?: string }
+  ): Observable<ApiResponse<Category>> {
+    return this.http.post<ApiResponse<Category>>(
+      `${this.categoryUrl}/Add`,
+      category
+    );
+  }
+
+  updateCategoryName(
+    request: { categoryId: number; newName: string }
+  ): Observable<ApiResponse<Category>> {
+    return this.http.put<ApiResponse<Category>>(
+      `${this.categoryUrl}/ChangeName`,
+      request
+    );
+  }
+
+  deleteCategory(id: number): Observable<ApiResponse<boolean>> {
+    return this.http.delete<ApiResponse<boolean>>(
+      `${this.categoryUrl}/Delete/${id}`
+    );
+  }
+
+  restoreCategory(id: number): Observable<ApiResponse<boolean>> {
+    return this.http.post<ApiResponse<boolean>>(
+      `${this.categoryUrl}/Restore/${id}`,
+      {}
+    );
+  }
+
+  getCategoryById(id: number): Observable<ApiResponse<Category>> {
+    return this.http.get<ApiResponse<Category>>(
+      `${this.categoryUrl}/GetById/${id}`
     );
   }
 }

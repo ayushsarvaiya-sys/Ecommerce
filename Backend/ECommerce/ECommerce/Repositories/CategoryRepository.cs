@@ -31,6 +31,24 @@ namespace ECommerce.Repositories
             return await _context.Categories.ToListAsync();
         }
 
+        public async Task<IEnumerable<CategoryModel>> GetAllCategoriesAdmin(bool includeDeleted = false)
+        {
+            var query = _context.Categories.IgnoreQueryFilters();
+            
+            if (includeDeleted)
+            {
+                // Return only deleted categories
+                query = query.Where(c => c.IsDeleted);
+            }
+            // else
+            // {
+            //     // Return only active (non-deleted) categories
+            //     query = query.Where(c => !c.IsDeleted);
+            // }
+            
+            return await query.ToListAsync();
+        }
+
         public async Task<CategoryModel> UpdateCategory(CategoryModel category)
         {
             _context.Categories.Update(category);
@@ -45,6 +63,18 @@ namespace ECommerce.Repositories
                 return false;
 
             category.IsDeleted = true;
+            _context.Categories.Update(category);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> RestoreCategory(int id)
+        {
+            var category = await _context.Categories.IgnoreQueryFilters().FirstOrDefaultAsync(c => c.Id == id);
+            if (category == null)
+                return false;
+
+            category.IsDeleted = false;
             _context.Categories.Update(category);
             await _context.SaveChangesAsync();
             return true;

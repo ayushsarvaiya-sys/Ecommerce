@@ -7,7 +7,9 @@ namespace ECommerce.Interfaces
         Task<CategoryResponseDTO> AddCategoryService(CreateCategoryDTO category);
         Task<CategoryResponseDTO?> GetCategoryByIdService(int id);
         Task<IEnumerable<CategoryResponseDTO>> GetAllCategoriesService();
+        Task<IEnumerable<CategoryResponseDTO>> GetAllCategoriesAdminService(bool includeDeleted = false);
         Task<CategoryResponseDTO> ChangeCategoryNameService(ChangeCategoryNameRequest request);
         Task<bool> DeleteCategoryService(int id);
+        Task<bool> RestoreCategoryService(int id);
     }
 }

@@ -65,6 +65,21 @@ namespace ECommerce.Controllers
         }
 
         [Authorize(Roles = "Admin")]
+        [HttpGet("GetAllAdmin")]
+        public async Task<IActionResult> GetAllCategoriesAdmin([FromQuery] bool includeDeleted = false)
+        {
+            try
+            {
+                var result = await _categoryService.GetAllCategoriesAdminService(includeDeleted);
+                return Ok(new ApiResponse<IEnumerable<CategoryResponseDTO>>(200, result, "Categories retrieved successfully"));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new ApiError(400, ex.Message));
+            }
+        }
+
+        [Authorize(Roles = "Admin")]
         [HttpPut("ChangeName")]
         public async Task<IActionResult> ChangeCategoryName([FromBody] ChangeCategoryNameRequest request)
         {
@@ -90,6 +105,24 @@ namespace ECommerce.Controllers
                     return NotFound(new ApiError(404, "Category not found"));
 
                 return Ok(new ApiResponse<bool>(200, result, "Category deleted successfully"));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new ApiError(400, ex.Message));
+            }
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost("Restore/{id}")]
+        public async Task<IActionResult> RestoreCategory(int id)
+        {
+            try
+            {
+                var result = await _categoryService.RestoreCategoryService(id);
+                if (!result)
+                    return NotFound(new ApiError(404, "Category not found"));
+
+                return Ok(new ApiResponse<bool>(200, result, "Category restored successfully"));
             }
             catch (Exception ex)
             {

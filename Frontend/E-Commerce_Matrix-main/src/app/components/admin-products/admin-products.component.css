@@ -1048,7 +1048,7 @@ select.form-input:focus {
 
 /* Deleted Product Row Styling */
 .deleted-product {
-  background-color: rgba(248, 249, 250, 0.6); /* 👈 fake opacity */
+  background-color: rgba(248, 249, 250, 0.6); 
 }
 
 /* Dim only text, NOT buttons */

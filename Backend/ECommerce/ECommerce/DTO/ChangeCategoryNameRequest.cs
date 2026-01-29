@@ -11,5 +11,8 @@ namespace ECommerce.DTO
         [Required(ErrorMessage = "New category name is required")]
         [StringLength(50, ErrorMessage = "Category name cannot exceed 50 characters")]
         public string? NewName { get; set; }
+
+        [StringLength(200, ErrorMessage = "Category description cannot exceed 200 characters")]
+        public string? Description { get; set; }
     }
 }

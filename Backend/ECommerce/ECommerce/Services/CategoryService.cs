@@ -35,6 +35,12 @@ namespace ECommerce.Services
             return _mapper.Map<IEnumerable<CategoryResponseDTO>>(categories);
         }
 
+        public async Task<IEnumerable<CategoryResponseDTO>> GetAllCategoriesAdminService(bool includeDeleted = false)
+        {
+            var categories = await _categoryRepository.GetAllCategoriesAdmin(includeDeleted);
+            return _mapper.Map<IEnumerable<CategoryResponseDTO>>(categories);
+        }
+
         public async Task<CategoryResponseDTO> ChangeCategoryNameService(ChangeCategoryNameRequest request)
         {
             var existingCategory = await _categoryRepository.GetCategoryById(request.CategoryId);
@@ -42,6 +48,8 @@ namespace ECommerce.Services
                 throw new ArgumentException("Category not found");
 
             existingCategory.Name = request.NewName;
+            existingCategory.Description = request.Description;
+            
             var result = await _categoryRepository.UpdateCategory(existingCategory);
             return _mapper.Map<CategoryResponseDTO>(result);
         }
@@ -49,6 +57,11 @@ namespace ECommerce.Services
         public async Task<bool> DeleteCategoryService(int id)
         {
             return await _categoryRepository.DeleteCategory(id);
+        }
+
+        public async Task<bool> RestoreCategoryService(int id)
+        {
+            return await _categoryRepository.RestoreCategory(id);
         }
     }
 }

@@ -1,0 +1,229 @@
+<div class="admin-categories-container">
+  <div class="categories-header">
+    <h1>Category Management</h1>
+    <button (click)="openAddCategoryModal()" class="btn-add-new">
+      + Add New Category
+    </button>
+  </div>
+
+  <!-- Success Message -->
+  <div *ngIf="successMessage" class="success-message">
+    {{ successMessage }}
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="errorMessage" class="error-message">
+    {{ errorMessage }}
+  </div>
+
+  <div class="search-bar">
+    <input
+      type="text"
+      placeholder="Search by category name or description..."
+      [(ngModel)]="searchTerm"
+      (keyup.enter)="onSearch()"
+      class="search-input"
+    />
+    <button (click)="onSearch()" class="btn-search">Search</button>
+    <button (click)="clearSearch()" class="btn-clear">Clear</button>
+    <label class="include-deleted-label">
+      <input
+        type="checkbox"
+        [(ngModel)]="includeDeleted"
+        (change)="applyFilters()"
+      />
+      Show Deleted
+    </label>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-state">
+    <p>Loading categories...</p>
+  </div>
+
+  <!-- Categories Table -->
+  <div *ngIf="!isLoading && categories.length > 0" class="categories-table-container">
+    <table class="categories-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Description</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let category of getFilteredCategories()" class="category-row" [ngClass]="{'deleted-row': category.isDeleted}">
+          <td>{{ category.id }}</td>
+          <td>{{ category.name }}</td>
+          <td>{{ category.description || 'N/A' }}</td>
+          <td>
+            <span *ngIf="!category.isDeleted" class="status-badge status-active">Active</span>
+            <span *ngIf="category.isDeleted" class="status-badge status-deleted">Deleted</span>
+          </td>
+          <td class="actions-cell">
+            <button
+              *ngIf="!category.isDeleted"
+              (click)="openEditCategoryModal(category)"
+              class="btn-edit"
+              title="Edit category"
+            >
+              Edit
+            </button>
+            <button
+              *ngIf="!category.isDeleted"
+              (click)="openDeleteConfirm(category)"
+              class="btn-delete"
+              title="Delete category"
+            >
+              Delete
+            </button>
+            <button
+              *ngIf="category.isDeleted"
+              (click)="restoreCategory(category)"
+              class="btn-restore"
+              title="Restore category"
+            >
+              Restore
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!isLoading && categories.length === 0" class="empty-state">
+    <p>No categories found. Create one to get started!</p>
+  </div>
+
+  <!-- Pagination -->
+  <div *ngIf="totalPages > 1" class="pagination">
+    <button
+      (click)="previousPage()"
+      [disabled]="currentPage === 1"
+      class="btn-pagination"
+    >
+      ← Previous
+    </button>
+
+    <div class="page-numbers">
+      <button
+        *ngFor="let page of getPageNumbers()"
+        (click)="goToPage(page)"
+        [class.active]="page === currentPage"
+        class="page-number"
+      >
+        {{ page }}
+      </button>
+    </div>
+
+    <button
+      (click)="nextPage()"
+      [disabled]="currentPage === totalPages"
+      class="btn-pagination"
+    >
+      Next →
+    </button>
+  </div>
+
+  <!-- Add Category Modal -->
+  <div *ngIf="showAddCategoryModal" class="modal-overlay" (click)="closeAddCategoryModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Add New Category</h2>
+        <button (click)="closeAddCategoryModal()" class="modal-close">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="categoryName">Category Name *</label>
+          <input
+            id="categoryName"
+            type="text"
+            [(ngModel)]="newCategory.name"
+            placeholder="Enter category name"
+            class="form-input"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="categoryDescription">Description</label>
+          <textarea
+            id="categoryDescription"
+            [(ngModel)]="newCategory.description"
+            placeholder="Enter category description"
+            class="form-textarea"
+            rows="4"
+          ></textarea>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button (click)="closeAddCategoryModal()" class="btn-cancel">Cancel</button>
+        <button (click)="addCategory()" class="btn-submit">Add Category</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Category Modal -->
+  <div *ngIf="showEditCategoryModal" class="modal-overlay" (click)="closeEditCategoryModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Edit Category</h2>
+        <button (click)="closeEditCategoryModal()" class="modal-close">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="editCategoryName">Category Name *</label>
+          <input
+            id="editCategoryName"
+            type="text"
+            [(ngModel)]="editCategory.newName"
+            placeholder="Enter category name"
+            class="form-input"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="editCategoryDescription">Description</label>
+          <textarea
+            id="editCategoryDescription"
+            [(ngModel)]="editCategoryDescription"
+            placeholder="Enter category description"
+            class="form-textarea"
+            rows="4"
+          ></textarea>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button (click)="closeEditCategoryModal()" class="btn-cancel">Cancel</button>
+        <button (click)="updateCategory()" class="btn-submit">Update Category</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div *ngIf="showDeleteConfirm" class="modal-overlay" (click)="closeDeleteConfirm()">
+    <div class="modal-content confirm-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Delete Category</h2>
+        <button (click)="closeDeleteConfirm()" class="modal-close">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <p class="warning-text">
+          Are you sure you want to delete the category "<strong>{{ deleteCategoryName }}</strong>"?
+        </p>
+      </div>
+
+      <div class="modal-footer">
+        <button (click)="closeDeleteConfirm()" class="btn-cancel">Cancel</button>
+        <button (click)="confirmDelete()" class="btn-danger">Delete Category</button>
+      </div>
+    </div>
+  </div>
+</div>

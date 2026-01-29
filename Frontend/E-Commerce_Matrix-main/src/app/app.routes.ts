@@ -4,6 +4,7 @@ import { RegistrationComponent } from './auth/registration/registration.componen
 import { HomepageComponent } from './home/homepage.component';
 import { UserProductsComponent } from './components/user-products/user-products.component';
 import { AdminProductsComponent } from './components/admin-products/admin-products.component';
+import { AdminCategoriesComponent } from './components/admin-categories/admin-categories.component';
 import { AuthGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
@@ -13,6 +14,7 @@ export const routes: Routes = [
   { path: 'home', component: HomepageComponent, canActivate: [AuthGuard] },
   { path: 'products', component: UserProductsComponent, canActivate: [AuthGuard] },
   { path: 'admin/products', component: AdminProductsComponent, canActivate: [AuthGuard] },
+  { path: 'admin/categories', component: AdminCategoriesComponent, canActivate: [AuthGuard] },
   { path: '**', redirectTo: '/home' },
 ];
   
