@@ -134,6 +134,10 @@
           <div class="stat-number">{{ importResult.totalInserted }}</div>
           <div class="stat-label">Products Inserted</div>
         </div>
+        <div *ngIf="importResult.totalUpdated > 0" class="stat-card info">
+          <div class="stat-number">{{ importResult.totalUpdated }}</div>
+          <div class="stat-label">Products Updated</div>
+        </div>
         <div *ngIf="importResult.totalFailed > 0" class="stat-card danger">
           <div class="stat-number">{{ importResult.totalFailed }}</div>
           <div class="stat-label">Records Failed</div>

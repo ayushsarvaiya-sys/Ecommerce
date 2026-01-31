@@ -23,6 +23,7 @@ interface BulkImportPreviewDTO {
 
 interface BulkImportResponseDTO {
   totalInserted: number;
+  totalUpdated: number;
   totalFailed: number;
   errorMessages: string[];
   message: string;

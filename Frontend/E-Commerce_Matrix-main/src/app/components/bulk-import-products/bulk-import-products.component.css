@@ -209,6 +209,10 @@ h4 {
   border-left-color: #48bb78;
 }
 
+.stat-card.info {
+  border-left-color: #3182ce;
+}
+
 .stat-card.danger {
   border-left-color: #f56565;
 }
@@ -222,6 +226,10 @@ h4 {
 
 .stat-card.success .stat-number {
   color: #22543d;
+}
+
+.stat-card.info .stat-number {
+  color: #2c5aa0;
 }
 
 .stat-card.danger .stat-number {

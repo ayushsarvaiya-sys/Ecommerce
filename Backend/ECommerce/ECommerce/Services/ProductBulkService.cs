@@ -4,6 +4,7 @@ using ECommerce.Interfaces;
 using ECommerce.Models;
 using ECommerce.Utils;
 using EFCore.BulkExtensions;
+using Microsoft.EntityFrameworkCore;
 
 namespace ECommerce.Services
 {
@@ -105,8 +106,16 @@ namespace ECommerce.Services
                 var categories = await _categoryRepository.GetAllCategories();
                 var categoryMap = categories.ToDictionary(c => c.Name!.ToLower(), c => c.Id);
 
-                // Convert DTOs to ProductModel
+                // Fetch existing products by name for upsert logic
+                var existingProductNames = _dbContext.Products
+                    .AsNoTracking()
+                    .Where(p => !p.IsDeleted)
+                    .Select(p => p.Name)
+                    .ToHashSet();
+
+                // Separate products into insert and update lists
                 var productsToInsert = new List<ProductModel>();
+                var productsToUpdate = new List<ProductModel>();
 
                 foreach (var product in validProducts)
                 {
@@ -131,10 +140,18 @@ namespace ECommerce.Services
                         IsDeleted = false
                     };
 
-                    productsToInsert.Add(productModel);
+                    // Check if product already exists by name
+                    if (existingProductNames.Contains(product.Name!))
+                    {
+                        productsToUpdate.Add(productModel);
+                    }
+                    else
+                    {
+                        productsToInsert.Add(productModel);
+                    }
                 }
 
-                // Bulk insert using EFCore.BulkExtensions
+                // Bulk insert new products
                 if (productsToInsert.Count > 0)
                 {
                     var bulkConfig = new BulkConfig
@@ -148,7 +165,36 @@ namespace ECommerce.Services
                     response.TotalInserted = productsToInsert.Count;
                 }
 
-                response.Message = $"Successfully imported {response.TotalInserted} products. {response.TotalFailed} records failed due to validation errors.";
+                // Update existing products
+                if (productsToUpdate.Count > 0)
+                {
+                    // Fetch the existing products from DB with their IDs
+                    var existingProductsMap = _dbContext.Products
+                        .AsNoTracking()
+                        .Where(p => !p.IsDeleted && productsToUpdate.Select(pt => pt.Name).Contains(p.Name))
+                        .ToDictionary(p => p.Name ?? "", p => p.Id);
+
+                    // Set the IDs for update
+                    foreach (var productToUpdate in productsToUpdate)
+                    {
+                        if (existingProductsMap.TryGetValue(productToUpdate.Name ?? "", out var existingId))
+                        {
+                            productToUpdate.Id = existingId;
+                        }
+                    }
+
+                    var bulkConfig = new BulkConfig
+                    {
+                        BatchSize = 1000,
+                        UseTempDB = false,
+                        CalculateStats = true
+                    };
+
+                    await _dbContext.BulkUpdateAsync(productsToUpdate, bulkConfig);
+                    response.TotalUpdated = productsToUpdate.Count;
+                }
+
+                response.Message = $"Successfully imported {response.TotalInserted} products, {response.TotalUpdated} updated. {response.TotalFailed} records failed due to validation errors.";
 
                 return response;
             }

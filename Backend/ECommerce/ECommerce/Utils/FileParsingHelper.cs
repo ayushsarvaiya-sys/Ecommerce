@@ -19,7 +19,6 @@ namespace ECommerce.Utils
             }
             catch (Exception ex)
             {
-                // Log but continue - EPPlus may still work in some cases
                 Console.WriteLine($"Warning: Failed to set EPPlus license: {ex.Message}");
             }
         }

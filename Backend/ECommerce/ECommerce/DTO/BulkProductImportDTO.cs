@@ -23,6 +23,7 @@ namespace ECommerce.DTO
     public class BulkImportResponseDTO
     {
         public int TotalInserted { get; set; }
+        public int TotalUpdated { get; set; }
         public int TotalFailed { get; set; }
         public List<string> ErrorMessages { get; set; } = new();
         public string Message { get; set; } = "";
