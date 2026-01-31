@@ -117,6 +117,7 @@ builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 // Product
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IProductBulkService, ProductBulkService>();
 
 var app = builder.Build();
 

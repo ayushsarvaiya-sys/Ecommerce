@@ -24,6 +24,14 @@
       >
         Manage Categories
       </a>
+      <a 
+        *ngIf="currentUser()?.role === 'Admin'" 
+        routerLink="/admin/bulk-import" 
+        routerLinkActive="active"
+        class="admin-link"
+      >
+        Bulk Import
+      </a>
       <a routerLink="/profile" routerLinkActive="active">Profile</a>
     </nav>
 

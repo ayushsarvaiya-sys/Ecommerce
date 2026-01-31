@@ -1,0 +1,163 @@
+<div class="bulk-import-container">
+  <div class="bulk-import-card">
+    <h2>Bulk Import Products</h2>
+    
+    <!-- File Upload Section -->
+    <div class="upload-section">
+      <label for="fileInput" class="file-label">
+        <div class="file-input-wrapper">
+          <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+          <span class="file-label-text">
+            {{ selectedFile ? selectedFile.name : 'Choose Excel or CSV file' }}
+          </span>
+        </div>
+        <input 
+          id="fileInput" 
+          type="file" 
+          (change)="onFileSelected($event)"
+          accept=".xlsx,.xls,.csv"
+          class="file-input"
+        />
+      </label>
+      
+      <div class="button-group">
+        <button 
+          (click)="importData()" 
+          [disabled]="!selectedFile || isLoading"
+          class="btn btn-import"
+        >
+          {{ isLoading ? 'Processing...' : 'Import Data' }}
+        </button>
+        <button 
+          (click)="downloadTemplate()" 
+          class="btn btn-template"
+        >
+          Download Template
+        </button>
+      </div>
+    </div>
+
+    <!-- Error Message -->
+    <div *ngIf="errorMessage" class="alert alert-error">
+      {{ errorMessage }}
+    </div>
+
+    <!-- Success Message -->
+    <div *ngIf="successMessage" class="alert alert-success">
+      {{ successMessage }}
+    </div>
+
+    <!-- Preview Section -->
+    <div *ngIf="showPreview && previewData" class="preview-section">
+      <h3>Import Preview</h3>
+      
+      <div class="preview-stats">
+        <div class="stat-card">
+          <div class="stat-number">{{ previewData.totalRecords }}</div>
+          <div class="stat-label">Total Records</div>
+        </div>
+        <div class="stat-card success">
+          <div class="stat-number">{{ previewData.validRecords }}</div>
+          <div class="stat-label">Valid Records</div>
+        </div>
+        <div class="stat-card danger" *ngIf="previewData.invalidRecords > 0">
+          <div class="stat-number">{{ previewData.invalidRecords }}</div>
+          <div class="stat-label">Invalid Records</div>
+        </div>
+      </div>
+
+      <!-- Validation Errors -->
+      <div *ngIf="previewData.errors && previewData.errors.length > 0" class="errors-list">
+        <h4>Validation Errors:</h4>
+        <ul>
+          <li *ngFor="let error of previewData.errors" class="error-item">
+            {{ error }}
+          </li>
+        </ul>
+      </div>
+
+      <!-- Preview Data Table -->
+      <div *ngIf="previewData.previewData && previewData.previewData.length > 0" class="preview-table">
+        <h4>Preview Data (First 10 Records)</h4>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Price</th>
+                <th>Stock</th>
+                <th>Category</th>
+                <th>Available</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let product of previewData.previewData">
+                <td>{{ product.name }}</td>
+                <td class="description">{{ product.description }}</td>
+                <td>₹{{ product.price?.toLocaleString('en-IN') }}</td>
+                <td>{{ product.stock }}</td>
+                <td>{{ product.categoryName }}</td>
+                <td>
+                  <span class="badge" [ngClass]="product.isAvailable ? 'badge-success' : 'badge-danger'">
+                    {{ product.isAvailable ? 'Yes' : 'No' }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Upload Button -->
+      <div class="upload-action" *ngIf="previewData.validRecords > 0">
+        <button 
+          (click)="uploadData()" 
+          [disabled]="isLoading"
+          class="btn btn-upload"
+        >
+          {{ isLoading ? 'Uploading...' : 'Upload Data' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Result Section -->
+    <div *ngIf="showResult && importResult" class="result-section">
+      <h3>Import Result</h3>
+      
+      <div class="result-stats">
+        <div class="stat-card success">
+          <div class="stat-number">{{ importResult.totalInserted }}</div>
+          <div class="stat-label">Products Inserted</div>
+        </div>
+        <div *ngIf="importResult.totalFailed > 0" class="stat-card danger">
+          <div class="stat-number">{{ importResult.totalFailed }}</div>
+          <div class="stat-label">Records Failed</div>
+        </div>
+      </div>
+
+      <!-- Error Messages -->
+      <div *ngIf="importResult.errorMessages && importResult.errorMessages.length > 0" class="errors-list">
+        <h4>Error Details:</h4>
+        <ul>
+          <li *ngFor="let error of importResult.errorMessages" class="error-item">
+            {{ error }}
+          </li>
+        </ul>
+      </div>
+
+      <div class="result-message">
+        {{ importResult.message }}
+      </div>
+
+      <!-- Reset Button -->
+      <button (click)="resetForm()" class="btn btn-reset">
+        Import Another File
+      </button>
+    </div>
+  </div>
+</div>

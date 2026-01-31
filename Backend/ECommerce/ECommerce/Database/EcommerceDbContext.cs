@@ -87,6 +87,11 @@ namespace ECommerce.Database
             modelBuilder.Entity<ProductModel>()
                 .HasIndex(p => p.CategoryId);
 
+            // Unique index for Products.Name
+            modelBuilder.Entity<ProductModel>()
+                .HasIndex(p => p.Name)
+                .IsUnique();
+
             // // Indexes for Carts
             // modelBuilder.Entity<CartModel>()
             //     .HasIndex(c => c.UserId);

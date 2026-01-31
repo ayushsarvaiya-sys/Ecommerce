@@ -12,9 +12,12 @@ namespace ECommerce.Controllers
     public class ProductController : ControllerBase
     {
         private readonly IProductService _productService;
-        public ProductController(IProductService productService)
+        private readonly IProductBulkService _productBulkService;
+
+        public ProductController(IProductService productService, IProductBulkService productBulkService)
         {
             _productService = productService;
+            _productBulkService = productBulkService;
         }
 
         [Authorize(Roles = "Admin")]
@@ -228,6 +231,42 @@ namespace ECommerce.Controllers
             {
                 var result = await _productService.RestockProductService(request);
                 return Ok(new ApiResponse<ProductResponseDTO>(200, result, "Product restocked successfully"));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new ApiError(400, ex.Message));
+            }
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost("BulkImport/Preview")]
+        public async Task<IActionResult> PreviewBulkImport(IFormFile file)
+        {
+            try
+            {
+                if (file == null || file.Length == 0)
+                    return BadRequest(new ApiError(400, "No file provided"));
+
+                var result = await _productBulkService.PreviewBulkImportAsync(file);
+                return Ok(new ApiResponse<BulkImportPreviewDTO>(200, result, "Preview generated successfully"));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new ApiError(400, ex.Message));
+            }
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost("BulkImport/Upload")]
+        public async Task<IActionResult> BulkImportProducts(IFormFile file)
+        {
+            try
+            {
+                if (file == null || file.Length == 0)
+                    return BadRequest(new ApiError(400, "No file provided"));
+
+                var result = await _productBulkService.BulkImportProductsAsync(file);
+                return Ok(new ApiResponse<BulkImportResponseDTO>(200, result, result.Message));
             }
             catch (Exception ex)
             {
