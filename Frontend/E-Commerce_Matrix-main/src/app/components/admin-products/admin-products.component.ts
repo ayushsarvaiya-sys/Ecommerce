@@ -97,6 +97,12 @@ export class AdminProductsComponent implements OnInit {
 
   deleteProductId = 0;
 
+  // Bulk delete properties
+  selectedProductIds: Set<number> = new Set();
+  selectAllChecked = false;
+  isDeleting = false;
+  showBulkDeleteConfirm = false;
+
   // Image upload properties
   selectedImageFile: File | null = null;
   selectedImageForEdit: File | null = null;
@@ -589,6 +595,80 @@ export class AdminProductsComponent implements OnInit {
       error: (error) => {
         this.errorMessage = 'Failed to restore product. ' + (error.error?.message || '');
         console.error('Error restoring product:', error);
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  // Bulk Delete Methods
+  toggleProductSelection(productId: number): void {
+    if (this.selectedProductIds.has(productId)) {
+      this.selectedProductIds.delete(productId);
+    } else {
+      this.selectedProductIds.add(productId);
+    }
+    this.cdr.detectChanges();
+  }
+
+  isProductSelected(productId: number): boolean {
+    return this.selectedProductIds.has(productId);
+  }
+
+  toggleSelectAll(): void {
+    if (this.selectAllChecked) {
+      // Select all non-deleted products
+      this.products.forEach(product => {
+        if (!product.isDeleted) {
+          this.selectedProductIds.add(product.id);
+        }
+      });
+    } else {
+      // Deselect all
+      this.selectedProductIds.clear();
+    }
+    this.cdr.detectChanges();
+  }
+
+  isActionDisabled(productId: number): boolean {
+    return this.selectedProductIds.has(productId);
+  }
+
+  openBulkDeleteConfirm(): void {
+    if (this.selectedProductIds.size === 0) {
+      this.errorMessage = 'Please select at least one product to delete';
+      setTimeout(() => (this.errorMessage = ''), 3000);
+      return;
+    }
+    this.showBulkDeleteConfirm = true;
+    this.cdr.detectChanges();
+  }
+
+  closeBulkDeleteConfirm(): void {
+    this.showBulkDeleteConfirm = false;
+    this.cdr.detectChanges();
+  }
+
+  confirmBulkDelete(): void {
+    const productIds = Array.from(this.selectedProductIds);
+    this.isDeleting = true;
+    this.errorMessage = '';
+    this.successMessage = '';
+
+    this.productService.bulkDeleteProducts(productIds).subscribe({
+      next: (response) => {
+        this.successMessage = `Successfully deleted ${productIds.length} product(s)`;
+        this.selectedProductIds.clear();
+        this.selectAllChecked = false;
+        this.showBulkDeleteConfirm = false;
+        this.loadProducts(this.currentPage);
+        this.isDeleting = false;
+        this.cdr.detectChanges();
+        setTimeout(() => (this.successMessage = ''), 3000);
+      },
+      error: (error) => {
+        this.isDeleting = false;
+        this.errorMessage = 'Failed to delete products. ' + (error.error?.message || '');
+        console.error('Error deleting products:', error);
         this.cdr.detectChanges();
       },
     });

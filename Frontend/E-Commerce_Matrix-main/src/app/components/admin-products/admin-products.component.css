@@ -103,6 +103,72 @@
   color: #666;
 }
 
+/* Bulk Delete Section */
+.bulk-delete-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  border: 1px solid #dee2e6;
+}
+
+.bulk-delete-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.select-all-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  color: #333;
+  user-select: none;
+}
+
+.select-all-checkbox input {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #3182ce;
+}
+
+.select-all-checkbox input:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.selected-count {
+  font-size: 0.95rem;
+  color: #666;
+  font-weight: 500;
+}
+
+.btn-bulk-delete {
+  padding: 10px 20px;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.3s;
+}
+
+.btn-bulk-delete:hover:not(:disabled) {
+  background-color: #c82333;
+}
+
+.btn-bulk-delete:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .table-responsive {
   overflow-x: auto;
   margin-bottom: 30px;
@@ -135,12 +201,30 @@
   font-size: 0.95rem;
 }
 
+.checkbox-col {
+  width: 50px;
+  text-align: center;
+  padding: 15px 10px;
+}
+
+.product-checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #3182ce;
+}
+
 .products-table tbody tr {
   transition: background-color 0.2s;
 }
 
 .products-table tbody tr:hover {
   background-color: #f8f9fa;
+}
+
+.products-table tbody tr.selected-row {
+  background-color: #e3f2fd;
+  border-left: 4px solid #3182ce;
 }
 
 .products-table tbody tr.low-stock {
@@ -209,12 +293,25 @@
   opacity: 0.85;
 }
 
+.btn-edit:disabled,
+.btn-restock:disabled,
+.btn-delete:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .empty-state {
   text-align: center;
   padding: 60px 20px;
   background-color: #f9f9f9;
   border-radius: 8px;
   color: #666;
+}
+
+.warning-text {
+  color: #dc3545;
+  font-weight: 500;
+  margin-top: 10px;
 }
 
 .pagination {

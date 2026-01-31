@@ -30,10 +30,10 @@ namespace ECommerce.Services
             // Handle null, zero, or negative stock values
             if (realStock == null || realStock <= 0)
                 return "Out of Stock";
-            
+
             if (realStock > 10)
                 return "In Stock";
-            
+
             return realStock.Value.ToString(); // Return actual stock number for "Only X left!"
         }
 
@@ -51,10 +51,10 @@ namespace ECommerce.Services
             var categoryExists = await _categoryRepository.GetCategoryById(product.CategoryId!.Value);
             if (categoryExists == null)
                 throw new ArgumentException("Category not found");
-            
+
             var productModel = _mapper.Map<ProductModel>(product);
             var result = await _productRepository.AddProduct(productModel);
-            
+
             // Reload to get category information
             var addedProduct = await _productRepository.GetProductById(result.Id);
             return MapToResponseDTO(addedProduct!);
@@ -137,7 +137,7 @@ namespace ECommerce.Services
 
             var productModel = _mapper.Map<ProductModel>(product);
             var result = await _productRepository.UpdateProduct(productModel);
-            
+
             // Reload to get category information
             var updatedProduct = await _productRepository.GetProductById(result.Id);
             return MapToResponseDTO(updatedProduct!);
@@ -168,12 +168,71 @@ namespace ECommerce.Services
             // Validate and sanitize stock before updating
             int currentStock = (existingProduct.Stock == null || existingProduct.Stock < 0) ? 0 : existingProduct.Stock.Value;
             existingProduct.Stock = currentStock + request.QuantityToAdd;
-            
+
             var result = await _productRepository.UpdateProduct(existingProduct);
-            
+
             // Reload to get category information
             var restockedProduct = await _productRepository.GetProductById(result.Id);
             return MapToResponseDTO(restockedProduct!);
+        }
+
+        public async Task<BulkDeleteResponseDTO> BulkDeleteProductsAsync(List<int> productIds)
+        {
+            var response = new BulkDeleteResponseDTO();
+
+            if (productIds == null || productIds.Count == 0)
+            {
+                response.Message = "No product IDs provided";
+                return response;
+            }
+
+            try
+            {
+                int deletedCount = 0;
+                var failedIds = new List<int>();
+
+                foreach (var productId in productIds)
+                {
+                    try
+                    {
+                        var product = await _productRepository.GetProductById(productId);
+                        if (product == null)
+                        {
+                            failedIds.Add(productId);
+                            continue;
+                        }
+
+                        // Soft delete - mark as deleted
+                        product.IsDeleted = true;
+                        await _productRepository.UpdateProduct(product);
+                        deletedCount++;
+                    }
+                    catch (Exception)
+                    {
+                        failedIds.Add(productId);
+                    }
+                }
+
+                response.TotalDeleted = deletedCount;
+                response.FailedIds = failedIds;
+
+                if (failedIds.Count > 0)
+                {
+                    response.Message = $"Deleted {deletedCount} product(s). {failedIds.Count} failed.";
+                }
+                else
+                {
+                    response.Message = $"Successfully deleted {deletedCount} product(s)";
+                }
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                response.Message = $"Error during bulk delete: {ex.Message}";
+                response.FailedIds = productIds;
+                return response;
+            }
         }
     }
 }

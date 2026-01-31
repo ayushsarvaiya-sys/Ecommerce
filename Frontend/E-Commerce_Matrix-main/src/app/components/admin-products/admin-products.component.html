@@ -137,11 +137,37 @@
     <p>Loading products...</p>
   </div>
 
+  <!-- Bulk Delete Section -->
+  <div *ngIf="!isLoading && products.length > 0" class="bulk-delete-section">
+    <div class="bulk-delete-left">
+      <label class="select-all-checkbox">
+        <input
+          type="checkbox"
+          [(ngModel)]="selectAllChecked"
+          (change)="toggleSelectAll()"
+        />
+        <span>Select All</span>
+      </label>
+      <span *ngIf="selectedProductIds.size > 0" class="selected-count">
+        {{ selectedProductIds.size }} selected
+      </span>
+    </div>
+    <button
+      *ngIf="selectedProductIds.size > 0"
+      (click)="openBulkDeleteConfirm()"
+      [disabled]="isDeleting"
+      class="btn-bulk-delete"
+    >
+      {{ isDeleting ? 'Deleting...' : 'Delete Selected Products' }}
+    </button>
+  </div>
+
   <!-- Products Table -->
   <div *ngIf="!isLoading && products.length > 0" class="table-responsive">
     <table class="products-table">
       <thead>
         <tr>
+          <th class="checkbox-col"></th>
           <th>ID</th>
           <th>Name</th>
           <th>Description</th>
@@ -153,7 +179,16 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let product of products" [ngClass]="{ 'low-stock': product.stock < 10, 'deleted-product': product.isDeleted }">
+        <tr *ngFor="let product of products" [ngClass]="{ 'low-stock': product.stock < 10, 'deleted-product': product.isDeleted, 'selected-row': isProductSelected(product.id) }">
+          <td class="checkbox-col">
+            <input
+              *ngIf="!product.isDeleted"
+              type="checkbox"
+              [checked]="isProductSelected(product.id)"
+              (change)="toggleProductSelection(product.id)"
+              class="product-checkbox"
+            />
+          </td>
           <td>{{ product.id }}</td>
           <td class="name-cell">{{ product.name }}</td>
           <td class="description-cell">{{ product.description }}</td>
@@ -170,6 +205,7 @@
             <button
               *ngIf="!product.isDeleted"
               (click)="openEditProductModal(product)"
+              [disabled]="isActionDisabled(product.id)"
               class="btn-edit"
               title="Edit"
             >
@@ -178,6 +214,7 @@
             <button
               *ngIf="!product.isDeleted"
               (click)="openRestockModal(product)"
+              [disabled]="isActionDisabled(product.id)"
               class="btn-restock"
               title="Restock"
             >
@@ -186,6 +223,7 @@
             <button
               *ngIf="!product.isDeleted"
               (click)="openDeleteConfirm(product.id)"
+              [disabled]="isActionDisabled(product.id)"
               class="btn-delete"
               title="Delete"
             >
@@ -506,6 +544,25 @@
     <div class="modal-footer">
       <button (click)="closeDeleteConfirm()" class="btn-cancel">Cancel</button>
       <button (click)="confirmDelete()" class="btn-danger">Delete</button>
+    </div>
+  </div>
+</div>
+<!-- Bulk Delete Confirmation Modal -->
+<div *ngIf="showBulkDeleteConfirm" class="modal-overlay" (click)="closeBulkDeleteConfirm()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Confirm Bulk Delete</h3>
+      <button (click)="closeBulkDeleteConfirm()" class="btn-close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p>Are you sure you want to delete <strong>{{ selectedProductIds.size }} product(s)</strong>?</p>
+      <p class="warning-text">This action cannot be undone.</p>
+    </div>
+    <div class="modal-footer">
+      <button (click)="closeBulkDeleteConfirm()" class="btn-cancel">Cancel</button>
+      <button (click)="confirmBulkDelete()" [disabled]="isDeleting" class="btn-danger">
+        {{ isDeleting ? 'Deleting...' : 'Delete All' }}
+      </button>
     </div>
   </div>
 </div>

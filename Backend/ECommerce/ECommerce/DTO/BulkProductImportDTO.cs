@@ -28,4 +28,16 @@ namespace ECommerce.DTO
         public List<string> ErrorMessages { get; set; } = new();
         public string Message { get; set; } = "";
     }
+
+    public class BulkDeleteRequest
+    {
+        public List<int> ProductIds { get; set; } = new();
+    }
+
+    public class BulkDeleteResponseDTO
+    {
+        public int TotalDeleted { get; set; }
+        public List<int> FailedIds { get; set; } = new();
+        public string Message { get; set; } = "";
+    }
 }

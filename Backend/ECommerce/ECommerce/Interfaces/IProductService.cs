@@ -14,5 +14,6 @@ namespace ECommerce.Interfaces
         Task<bool> RestoreProductService(int id);
         Task<IEnumerable<ProductResponseDTO>> GetProductsByCategoryService(int categoryId);
         Task<ProductResponseDTO> RestockProductService(RestockProductRequest request);
+        Task<BulkDeleteResponseDTO> BulkDeleteProductsAsync(List<int> productIds);
     }
 }

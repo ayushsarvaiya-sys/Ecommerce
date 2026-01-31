@@ -68,8 +68,8 @@ namespace ECommerce.Controllers
 
         [HttpGet("GetPaginated")]
         public async Task<IActionResult> GetProductsPaginated(
-            [FromQuery] int page = 1, 
-            [FromQuery] int pageSize = 10, 
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10,
             [FromQuery] string? search = null,
             [FromQuery] int? categoryId = null,
             [FromQuery] decimal? minPrice = null,
@@ -87,9 +87,9 @@ namespace ECommerce.Controllers
 
                 // Convert page and pageSize to offset
                 int offset = (page - 1) * pageSize;
-                var request = new PaginationRequest 
-                { 
-                    Offset = offset, 
+                var request = new PaginationRequest
+                {
+                    Offset = offset,
                     Limit = pageSize,
                     SearchTerm = search,
                     CategoryId = categoryId,
@@ -98,7 +98,7 @@ namespace ECommerce.Controllers
                     IncludeDeleted = false
                 };
                 var result = await _productService.GetProductsPaginatedService(request);
-                
+
                 return Ok(new ApiResponse<PaginatedResponse<ProductResponseDTO>>(200, result, "Products retrieved successfully"));
             }
             catch (Exception ex)
@@ -110,8 +110,8 @@ namespace ECommerce.Controllers
         [Authorize(Roles = "Admin")]
         [HttpGet("GetPaginatedAdmin")]
         public async Task<IActionResult> GetProductsAdminPaginated(
-            [FromQuery] int page = 1, 
-            [FromQuery] int pageSize = 10, 
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10,
             [FromQuery] string? search = null,
             [FromQuery] int? categoryId = null,
             [FromQuery] decimal? minPrice = null,
@@ -134,9 +134,9 @@ namespace ECommerce.Controllers
 
                 // Convert page and pageSize to offset
                 int offset = (page - 1) * pageSize;
-                var request = new PaginationRequest 
-                { 
-                    Offset = offset, 
+                var request = new PaginationRequest
+                {
+                    Offset = offset,
                     Limit = pageSize,
                     SearchTerm = search,
                     CategoryId = categoryId,
@@ -149,7 +149,7 @@ namespace ECommerce.Controllers
                     IncludeDeleted = includeDeleted
                 };
                 var result = await _productService.GetProductsAdminPaginatedService(request);
-                
+
                 return Ok(new ApiResponse<PaginatedResponse<AdminProductResponseDTO>>(200, result, "Products retrieved successfully"));
             }
             catch (Exception ex)
@@ -267,6 +267,24 @@ namespace ECommerce.Controllers
 
                 var result = await _productBulkService.BulkImportProductsAsync(file);
                 return Ok(new ApiResponse<BulkImportResponseDTO>(200, result, result.Message));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new ApiError(400, ex.Message));
+            }
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost("BulkDelete")]
+        public async Task<IActionResult> BulkDeleteProducts([FromBody] BulkDeleteRequest request)
+        {
+            try
+            {
+                if (request == null || request.ProductIds == null || request.ProductIds.Count == 0)
+                    return BadRequest(new ApiError(400, "No product IDs provided"));
+
+                var result = await _productService.BulkDeleteProductsAsync(request.ProductIds);
+                return Ok(new ApiResponse<BulkDeleteResponseDTO>(200, result, result.Message));
             }
             catch (Exception ex)
             {

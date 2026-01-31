@@ -55,6 +55,12 @@ export interface RestockProductRequest {
   quantityToAdd: number;
 }
 
+export interface BulkDeleteResponse {
+  totalDeleted: number;
+  failedIds: number[];
+  message: string;
+}
+
 export interface PaginatedResponse<T> {
   data: T[];
   totalCount: number;
@@ -227,7 +233,12 @@ export class ProductService {
       `${this.apiUrl}/Delete/${id}`
     );
   }
-
+  bulkDeleteProducts(productIds: number[]): Observable<ApiResponse<BulkDeleteResponse>> {
+    return this.http.post<ApiResponse<BulkDeleteResponse>>(
+      `${this.apiUrl}/BulkDelete`,
+      { productIds }
+    );
+  }
   restoreProduct(id: number): Observable<ApiResponse<boolean>> {
     return this.http.post<ApiResponse<boolean>>(
       `${this.apiUrl}/Restore/${id}`,
