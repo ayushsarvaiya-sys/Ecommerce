@@ -33,6 +33,16 @@
         Bulk Import
       </a>
       <a routerLink="/profile" routerLinkActive="active">Profile</a>
+      
+      <!-- View Cart Button (User Only) -->
+      <button 
+        *ngIf="currentUser()?.role === 'User'" 
+        class="cart-btn"
+        (click)="viewCart()"
+        title="View Shopping Cart"
+      >
+        🛒 Cart <span class="cart-count" *ngIf="cartItemCount$ | async as count">{{ count }}</span>
+      </button>
     </nav>
 
     <!-- Show user info only when logged in -->

@@ -31,7 +31,7 @@ namespace ECommerce.Models
         public bool IsDeleted { get; set; } = false;
 
         // Navigation Properties
-        // public ICollection<CartModel> Carts { get; set; } = new List<CartModel>();
+        public ICollection<CartModel> Carts { get; set; } = new List<CartModel>();
         // public ICollection<OrderModel> Orders { get; set; } = new List<OrderModel>();
     }
 }

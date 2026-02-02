@@ -1,0 +1,203 @@
+<div class="shopping-cart-container">
+  <!-- Header -->
+  <div class="cart-header">
+    <h1>Shopping Cart</h1>
+    <p class="cart-subtitle">Review and manage your items</p>
+  </div>
+
+  <!-- Messages -->
+  <div *ngIf="errorMessage" class="alert alert-error">
+    {{ errorMessage }}
+  </div>
+  <div *ngIf="successMessage" class="alert alert-success">
+    {{ successMessage }}
+  </div>
+
+  <!-- Main Content -->
+  <div class="cart-content">
+    <!-- Cart Items Section -->
+    <div class="cart-items-section">
+      <div *ngIf="isLoading" class="loading-container">
+        <p>Loading your cart...</p>
+      </div>
+
+      <div *ngIf="!isLoading && (!cart || cart.cartItems.length === 0)" class="empty-cart">
+        <p>Your cart is empty</p>
+        <button (click)="continueShopping()" class="btn-continue-shopping">
+          Continue Shopping
+        </button>
+      </div>
+
+      <div *ngIf="!isLoading && cart && cart.cartItems.length > 0" class="cart-items-wrapper">
+        <!-- Items Table -->
+        <div class="table-responsive">
+          <table class="cart-items-table">
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th>Total</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of displayedItems" class="cart-item-row">
+                <!-- Product Info -->
+                <td class="product-info">
+                  <div class="product-details">
+                    <div *ngIf="item.productImageUrl" class="product-image">
+                      <img
+                        [src]="item.productImageUrl"
+                        [alt]="item.productName"
+                        class="item-image"
+                      />
+                    </div>
+                    <div class="product-name">
+                      <p>{{ item.productName }}</p>
+                      <small>Product ID: {{ item.productId }}</small>
+                    </div>
+                  </div>
+                </td>
+
+                <!-- Price -->
+                <td class="price-cell">
+                  <span class="price">₹{{ item.priceAtAddTime.toFixed(2) }}</span>
+                </td>
+
+                <!-- Quantity -->
+                <td class="quantity-cell">
+                  <div class="quantity-control">
+                    <button
+                      (click)="updateQuantity(item, item.quantity - 1)"
+                      [disabled]="item.quantity <= 1 || isUpdating"
+                      class="btn-qty-decrease"
+                    >
+                      -
+                    </button>
+                    <input
+                      type="number"
+                      [(ngModel)]="item.quantity"
+                      (change)="updateQuantity(item, item.quantity)"
+                      [disabled]="isUpdating"
+                      class="quantity-input"
+                      min="1"
+                    />
+                    <button
+                      (click)="updateQuantity(item, item.quantity + 1)"
+                      [disabled]="isUpdating"
+                      class="btn-qty-increase"
+                    >
+                      +
+                    </button>
+                  </div>
+                </td>
+
+                <!-- Total -->
+                <td class="total-cell">
+                  <span class="total-price">₹{{ item.totalPrice?.toFixed(2) }}</span>
+                </td>
+
+                <!-- Actions -->
+                <td class="actions-cell">
+                  <button
+                    (click)="removeItem(item.id, item.productName)"
+                    [disabled]="isUpdating"
+                    class="btn-remove"
+                    title="Remove from cart"
+                  >
+                    Remove
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div *ngIf="totalPages > 1" class="pagination-container">
+          <button (click)="previousPage()" [disabled]="currentPage === 1" class="btn-prev">
+            ← Previous
+          </button>
+
+          <div class="page-numbers">
+            <button
+              *ngFor="let page of getPageNumbers()"
+              (click)="goToPage(page)"
+              [class.active]="page === currentPage"
+              class="page-btn"
+            >
+              {{ page }}
+            </button>
+          </div>
+
+          <button
+            (click)="nextPage()"
+            [disabled]="currentPage === totalPages"
+            class="btn-next"
+          >
+            Next →
+          </button>
+        </div>
+
+        <!-- Cart Actions -->
+        <div class="cart-actions">
+          <button
+            (click)="clearCart()"
+            [disabled]="isUpdating"
+            class="btn-clear-cart"
+          >
+            Clear Cart
+          </button>
+          <button
+            (click)="continueShopping()"
+            class="btn-continue-shopping"
+          >
+            Continue Shopping
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary Section -->
+    <div class="cart-summary-section" *ngIf="cart && cart.cartItems.length > 0">
+      <div class="summary-card">
+        <h2>Order Summary</h2>
+
+        <div class="summary-item">
+          <span>Subtotal ({{ cart.totalItems }} items):</span>
+          <span>₹{{ cart.totalPrice.toFixed(2) }}</span>
+        </div>
+
+        <div class="summary-item">
+          <span>Shipping:</span>
+          <span class="free">Free</span>
+        </div>
+
+        <div class="summary-item">
+          <span>Tax:</span>
+          <span>Calculated at checkout</span>
+        </div>
+
+        <hr />
+
+        <div class="summary-item total">
+          <span>Total:</span>
+          <span>₹{{ cart.totalPrice.toFixed(2) }}</span>
+        </div>
+
+        <button
+          (click)="proceedToCheckout()"
+          [disabled]="isUpdating || !cart.cartItems.length"
+          class="btn-checkout"
+        >
+          Proceed to Checkout
+        </button>
+
+        <p class="cart-info">
+          You will be able to review and confirm your order before making payment.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>

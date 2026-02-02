@@ -6,6 +6,7 @@ import { UserProductsComponent } from './components/user-products/user-products.
 import { AdminProductsComponent } from './components/admin-products/admin-products.component';
 import { AdminCategoriesComponent } from './components/admin-categories/admin-categories.component';
 import { BulkImportProductsComponent } from './components/bulk-import-products/bulk-import-products.component';
+import { ShoppingCartComponent } from './components/shopping-cart/shopping-cart.component';
 import { AuthGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
@@ -14,6 +15,7 @@ export const routes: Routes = [
   { path: 'register', component: RegistrationComponent },
   { path: 'home', component: HomepageComponent, canActivate: [AuthGuard] },
   { path: 'products', component: UserProductsComponent, canActivate: [AuthGuard] },
+  { path: 'cart', component: ShoppingCartComponent, canActivate: [AuthGuard] },
   { path: 'admin/products', component: AdminProductsComponent, canActivate: [AuthGuard] },
   { path: 'admin/categories', component: AdminCategoriesComponent, canActivate: [AuthGuard] },
   { path: 'admin/bulk-import', component: BulkImportProductsComponent, canActivate: [AuthGuard] },

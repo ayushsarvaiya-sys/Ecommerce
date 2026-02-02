@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { CartService } from '../../services/cart.service';
 
 @Component({
   selector: 'app-header',
@@ -13,10 +14,14 @@ import { AuthService } from '../../services/auth.service';
 export class HeaderComponent {
   private authService = inject(AuthService);
   private router = inject(Router);
+  private cartService = inject(CartService);
 
   // 🔥 Use computed signal for reactive updates
   currentUser = this.authService.currentUser;
   isLoggedIn = this.authService.isLoggedIn;
+  
+  // Cart item count observable
+  cartItemCount$ = this.cartService.cartItemCount$;
 
   logout() {
     // ✅ Subscribe to logout API call
@@ -31,5 +36,9 @@ export class HeaderComponent {
         this.router.navigate(['/login']);
       }
     });
+  }
+
+  viewCart() {
+    this.router.navigate(['/cart']);
   }
 }

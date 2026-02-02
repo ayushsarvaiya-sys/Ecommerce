@@ -9,6 +9,7 @@ import {
   PaginatedResponse,
 } from '../../services/product.service';
 import { AuthService } from '../../services/auth.service';
+import { CartService } from '../../services/cart.service';
 
 @Component({
   selector: 'app-user-products',
@@ -65,11 +66,17 @@ export class UserProductsComponent implements OnInit {
   // User role
   userRole: string | null = null;
 
+  // Add to Cart properties
+  cartQuantities: { [productId: number]: number } = {};
+  addingToCart: { [productId: number]: boolean } = {};
+  cartAddedSuccess: { [productId: number]: boolean } = {};
+
 //   constructor(private productService: ProductService) {}
 constructor(
   private productService: ProductService,
   private cdr: ChangeDetectorRef,
-  private authService: AuthService
+  private authService: AuthService,
+  private cartService: CartService
 ) {}
 
 
@@ -126,6 +133,14 @@ constructor(
               console.log('Paginated Data:', paginatedData);
               console.log('Items:', paginatedData.data);
               this.products = Array.isArray(paginatedData.data) ? paginatedData.data : [];
+              
+              // Initialize quantity for each product to 1
+              this.products.forEach(product => {
+                if (!this.cartQuantities[product.id]) {
+                  this.cartQuantities[product.id] = 1;
+                }
+              });
+              
               this.totalCount = paginatedData.totalCount || 0;
               this.totalPages = Math.ceil(this.totalCount / this.pageSize);
               console.log('Products set to:', this.products);
@@ -169,6 +184,14 @@ constructor(
               console.log('Paginated Data:', paginatedData);
               console.log('Items:', paginatedData.data);
               this.products = Array.isArray(paginatedData.data) ? paginatedData.data : [];
+              
+              // Initialize quantity for each product to 1
+              this.products.forEach(product => {
+                if (!this.cartQuantities[product.id]) {
+                  this.cartQuantities[product.id] = 1;
+                }
+              });
+              
               this.totalCount = paginatedData.totalCount || 0;
               this.totalPages = Math.ceil(this.totalCount / this.pageSize);
               console.log('Products set to:', this.products);
@@ -257,5 +280,141 @@ constructor(
     this.currentPage = 1;
     this.loadProducts(1);
     this.cdr.detectChanges();
+  }
+
+  /**
+   * Initialize cart quantity for a product (default 1)
+   */
+  initializeCartQuantity(productId: number): number {
+    if (!this.cartQuantities[productId]) {
+      this.cartQuantities[productId] = 1;
+    }
+    return this.cartQuantities[productId];
+  }
+
+  /**
+   * Increment cart quantity for a product
+   */
+  incrementQuantity(productId: number): void {
+    if (!this.cartQuantities[productId]) {
+      this.cartQuantities[productId] = 1;
+    }
+    this.cartQuantities[productId]++;
+  }
+
+  /**
+   * Decrement cart quantity for a product
+   */
+  decrementQuantity(productId: number): void {
+    if (this.cartQuantities[productId] && this.cartQuantities[productId] > 1) {
+      this.cartQuantities[productId]--;
+    }
+  }
+
+  /**
+   * Get available stock - handles both user view (stockStatus) and admin view (stock)
+   * For users: stockStatus can be numeric string, "In Stock", or "Out of Stock"
+   * For admins: stock is numeric value
+   */
+  getAvailableStock(product: any): number {
+    // Admin view: uses numeric 'stock' field
+    if (this.userRole === 'Admin' && product.stock !== undefined) {
+      return product.stock;
+    }
+    
+    // User view: uses 'stockStatus' field
+    if (!product.stockStatus) return 0;
+    
+    // If stockStatus is a number (string representation of number)
+    const stockAsNumber = parseInt(product.stockStatus, 10);
+    if (!isNaN(stockAsNumber)) {
+      return stockAsNumber;
+    }
+    
+    // If stockStatus is "In Stock"
+    if (product.stockStatus === 'In Stock') {
+      return 999999; // Large number to indicate stock available
+    }
+    
+    // If stockStatus is "Out of Stock" or anything else
+    return 0;
+  }
+
+  /**
+   * Get stock status text for display
+   * For admins: shows numeric stock value
+   * For users: shows formatted stock status
+   */
+  getStockStatusText(product: any): string {
+    const stock = this.getAvailableStock(product);
+    
+    // Admin view: always show numeric stock
+    if (this.userRole === 'Admin') {
+      return `Stock: ${stock}`;
+    }
+    
+    // User view: show formatted status
+    if (stock === 0) return 'Out of Stock';
+    if (stock >= 999999) return 'In Stock';
+    return `Stock: ${stock}`;
+  }
+
+  /**
+   * Check if product is in stock and available for purchase
+   * Admins cannot purchase, so always return false for admins
+   */
+  isProductAvailable(product: any): boolean {
+    if (this.userRole === 'Admin') {
+      return false; // Admins cannot purchase
+    }
+    return this.getAvailableStock(product) > 0;
+  }
+
+  /**
+   * Add product to cart
+   */
+  addToCart(product: ProductResponse): void {
+    const quantity = this.cartQuantities[product.id] || 1;
+    const availableStock = this.getAvailableStock(product);
+
+    if (quantity <= 0) {
+      this.errorMessage = 'Quantity must be at least 1';
+      return;
+    }
+
+    if (availableStock === 0) {
+      this.errorMessage = 'This product is out of stock';
+      return;
+    }
+
+    if (availableStock < 999999 && quantity > availableStock) {
+      this.errorMessage = `Only ${availableStock} items available`;
+      return;
+    }
+
+    this.addingToCart[product.id] = true;
+    this.errorMessage = '';
+
+    this.cartService.addToCart(product.id, quantity).subscribe({
+      next: (response) => {
+        this.successMessage = `${product.name} added to cart!`;
+        this.cartAddedSuccess[product.id] = true;
+        this.addingToCart[product.id] = false;
+        this.cartQuantities[product.id] = 1; // Reset quantity
+        this.cdr.detectChanges();
+
+        // Hide success message after 3 seconds
+        setTimeout(() => {
+          this.cartAddedSuccess[product.id] = false;
+          this.successMessage = '';
+          this.cdr.detectChanges();
+        }, 3000);
+      },
+      error: (error) => {
+        this.errorMessage = error?.error?.message || 'Failed to add to cart';
+        this.addingToCart[product.id] = false;
+        this.cdr.detectChanges();
+      }
+    });
   }
 }

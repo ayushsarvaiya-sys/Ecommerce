@@ -12,8 +12,8 @@ namespace ECommerce.Database
         public DbSet<UserModel> Users { get; set; }
         public DbSet<CategoryModel> Categories { get; set; }
         public DbSet<ProductModel> Products { get; set; }
-        // public DbSet<CartModel> Carts { get; set; }
-        // public DbSet<CartItemModel> CartItems { get; set; }
+        public DbSet<CartModel> Carts { get; set; }
+        public DbSet<CartItemModel> CartItems { get; set; }
         // public DbSet<OrderModel> Orders { get; set; }
         // public DbSet<OrderItemModel> OrderItems { get; set; }
 
@@ -23,18 +23,18 @@ namespace ECommerce.Database
             modelBuilder.Entity<UserModel>().HasQueryFilter(m => !m.IsDeleted);
             modelBuilder.Entity<CategoryModel>().HasQueryFilter(m => !m.IsDeleted);
             modelBuilder.Entity<ProductModel>().HasQueryFilter(m => !m.IsDeleted);
-            // modelBuilder.Entity<CartModel>().HasQueryFilter(m => !m.IsDeleted);
-            // modelBuilder.Entity<CartItemModel>().HasQueryFilter(m => !m.IsDeleted);
+            modelBuilder.Entity<CartModel>().HasQueryFilter(m => !m.IsDeleted);
+            modelBuilder.Entity<CartItemModel>().HasQueryFilter(m => !m.IsDeleted);
             // modelBuilder.Entity<OrderModel>().HasQueryFilter(m => !m.IsDeleted);
             // modelBuilder.Entity<OrderItemModel>().HasQueryFilter(m => !m.IsDeleted);
 
             // Relationships with Cascade Delete Behavior
             // User -> Cart (One-to-Many)
-            // modelBuilder.Entity<CartModel>()
-            //     .HasOne(c => c.User)
-            //     .WithMany(u => u.Carts)
-            //     .HasForeignKey(c => c.UserId)
-            //     .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<CartModel>()
+                .HasOne(c => c.User)
+                .WithMany(u => u.Carts)
+                .HasForeignKey(c => c.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             // // User -> Order (One-to-Many)
             // modelBuilder.Entity<OrderModel>()
@@ -50,19 +50,19 @@ namespace ECommerce.Database
                 .HasForeignKey(p => p.CategoryId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // // Cart -> CartItem (One-to-Many)
-            // modelBuilder.Entity<CartItemModel>()
-            //     .HasOne(ci => ci.Cart)
-            //     .WithMany(c => c.CartItems)
-            //     .HasForeignKey(ci => ci.CartId)
-            //     .OnDelete(DeleteBehavior.Cascade);
+            // Cart -> CartItem (One-to-Many)
+            modelBuilder.Entity<CartItemModel>()
+                .HasOne(ci => ci.Cart)
+                .WithMany(c => c.CartItems)
+                .HasForeignKey(ci => ci.CartId)
+                .OnDelete(DeleteBehavior.Cascade);
 
-            // // Product -> CartItem (One-to-Many)
-            // modelBuilder.Entity<CartItemModel>()
-            //     .HasOne(ci => ci.Product)
-            //     .WithMany(p => p.CartItems)
-            //     .HasForeignKey(ci => ci.ProductId)
-            //     .OnDelete(DeleteBehavior.Restrict);
+            // Product -> CartItem (One-to-Many)
+            modelBuilder.Entity<CartItemModel>()
+                .HasOne(ci => ci.Product)
+                .WithMany(p => p.CartItems)
+                .HasForeignKey(ci => ci.ProductId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             // // Order -> OrderItem (One-to-Many)
             // modelBuilder.Entity<OrderItemModel>()
@@ -92,15 +92,15 @@ namespace ECommerce.Database
                 .HasIndex(p => p.Name)
                 .IsUnique();
 
-            // // Indexes for Carts
-            // modelBuilder.Entity<CartModel>()
-            //     .HasIndex(c => c.UserId);
+            // Indexes for Carts
+            modelBuilder.Entity<CartModel>()
+                .HasIndex(c => c.UserId);
 
-            // // Indexes for CartItems
-            // modelBuilder.Entity<CartItemModel>()
-            //     .HasIndex(ci => ci.CartId);
-            // modelBuilder.Entity<CartItemModel>()
-            //     .HasIndex(ci => ci.ProductId);
+            // Indexes for CartItems
+            modelBuilder.Entity<CartItemModel>()
+                .HasIndex(ci => ci.CartId);
+            modelBuilder.Entity<CartItemModel>()
+                .HasIndex(ci => ci.ProductId);
 
             // // Indexes for Orders
             // modelBuilder.Entity<OrderModel>()

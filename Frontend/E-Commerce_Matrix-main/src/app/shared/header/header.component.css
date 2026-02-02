@@ -28,6 +28,8 @@
   display: flex;
   gap: 1.5rem;
   flex: 1;
+  align-items: center;
+  height: 100%;
 }
 
 .nav-links a {
@@ -35,6 +37,10 @@
   text-decoration: none;
   font-size: 1rem;
   transition: color 0.3s ease;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding: 0.5rem 0;
 }
 
 .nav-links a:hover,
@@ -78,6 +84,44 @@
   background-color: #c0392b;
 }
 
+.cart-btn {
+  background-color: #27ae60;
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  position: relative;
+  height: 100%;
+}
+
+.cart-btn:hover {
+  background-color: #229954;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.cart-count {
+  background-color: #e74c3c;
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: bold;
+  margin-left: 0.25rem;
+}
+
 @media (max-width: 768px) {
   .header-container {
     flex-wrap: wrap;
@@ -87,9 +131,15 @@
   .nav-links {
     width: 100%;
     gap: 1rem;
+    flex-wrap: wrap;
   }
 
   .logo h1 {
     font-size: 1.5rem;
+  }
+
+  .cart-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
   }
 }

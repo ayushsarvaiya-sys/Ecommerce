@@ -119,6 +119,11 @@ builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IProductBulkService, ProductBulkService>();
 
+// Cart
+builder.Services.AddScoped<ICartService, CartService>();
+builder.Services.AddScoped<ICartRepository, CartRepository>();
+
+// Build the app
 var app = builder.Build();
 
 // database Seeder

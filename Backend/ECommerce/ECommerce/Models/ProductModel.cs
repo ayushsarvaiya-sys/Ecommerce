@@ -43,7 +43,7 @@ namespace ECommerce.Models
         public CategoryModel? Category { get; set; }
 
         // Navigation Property
-        // public ICollection<CartItemModel> CartItems { get; set; } = new List<CartItemModel>();
+        public ICollection<CartItemModel> CartItems { get; set; } = new List<CartItemModel>();
         // public ICollection<OrderItemModel> OrderItems { get; set; } = new List<OrderItemModel>();
     }
 }
