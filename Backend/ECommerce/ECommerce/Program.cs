@@ -8,6 +8,7 @@ using ECommerce.Services;
 using ECommerce.Utils;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
@@ -99,6 +100,53 @@ builder.Services.AddAutoMapper(cfg =>
     cfg.AddProfile<UserProfile>();
 });
 
+// Response Compression - Brotli (Primary) & Gzip (Fallback)
+builder.Services.AddResponseCompression(options =>
+{
+    options.EnableForHttps = true;
+    options.Providers.Add<BrotliCompressionProvider>();
+    options.Providers.Add<GzipCompressionProvider>();
+    
+    // Only compress successful responses (2xx status codes)
+    options.ExcludedMimeTypes = new[]
+    {
+        "image/jpeg",
+        "image/png",
+        "image/gif",
+        "image/webp",
+        "application/octet-stream"
+    };
+    
+    // Expanded MIME types for compression
+    var mimeTypes = new[] 
+    { 
+        "application/json",
+        "text/plain",
+        "text/xml",
+        "application/xml",
+        "text/csv",
+        "image/svg+xml",
+        "text/javascript",
+        "application/javascript"
+    };
+    options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(mimeTypes);
+});
+
+builder.Services.Configure<BrotliCompressionProviderOptions>(options =>
+{
+    // Valid CompressionLevel values: NoCompression(0), Fastest(1), Optimal(2), SmallestSize(3)
+    // Using Optimal for balanced compression speed and ratio
+    options.Level = System.IO.Compression.CompressionLevel.Optimal;
+});
+
+builder.Services.Configure<GzipCompressionProviderOptions>(options =>
+{
+    options.Level = System.IO.Compression.CompressionLevel.Optimal;
+});
+
+
+
+
 // Configure Cloudinary Settings
 builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("Cloudinary"));
 
@@ -144,9 +192,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseCors("CorsPolicy");
+// IMPORTANT: Response Compression MUST come before CORS and other middleware
+app.UseResponseCompression();
 
 app.UseHttpsRedirection();
+
+// CORS must come after compression
+app.UseCors("CorsPolicy");
 
 app.UseAuthentication();
 
