@@ -74,5 +74,11 @@ namespace ECommerce.Controllers
 
             return Ok(new { message = "Logged out successfully" });
         }
+
+        [HttpGet("test-error")]
+        public IActionResult TestError()
+        {
+            throw new Exception("This is a test exception to verify global exception handler");
+        }
     }
 }

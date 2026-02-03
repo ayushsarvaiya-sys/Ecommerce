@@ -232,10 +232,15 @@ namespace ECommerce.Controllers
                 var result = await _productService.RestockProductService(request);
                 return Ok(new ApiResponse<ProductResponseDTO>(200, result, "Product restocked successfully"));
             }
-            catch (Exception ex)
+            catch (ArgumentException ex)  // Business rule exceptions (Product not found, Invalid input)
             {
                 return BadRequest(new ApiError(400, ex.Message));
             }
+            catch (InvalidOperationException ex)  // Invalid operations
+            {
+                return StatusCode(422, new ApiError(422, ex.Message));
+            }
+            // Let other exceptions (NullRef, DB errors, etc.) bubble to GEH → 500
         }
 
         [Authorize(Roles = "Admin")]

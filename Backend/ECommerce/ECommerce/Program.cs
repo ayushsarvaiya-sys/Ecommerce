@@ -2,6 +2,7 @@ using ECommerce.Config;
 using ECommerce.Database;
 using ECommerce.Interfaces;
 using ECommerce.Mappings;
+using ECommerce.Middleware;
 using ECommerce.Repositories;
 using ECommerce.Services;
 using ECommerce.Utils;
@@ -125,6 +126,9 @@ builder.Services.AddScoped<ICartRepository, CartRepository>();
 
 // Build the app
 var app = builder.Build();
+
+// Global Exception Handler Middleware
+app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
 
 // database Seeder
 using (var scope = app.Services.CreateScope())  
