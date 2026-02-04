@@ -181,8 +181,8 @@ builder.Services.AddRateLimiter(options =>
             partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
             factory: _ => new TokenBucketRateLimiterOptions
             {
-                TokenLimit = 10,
-                TokensPerPeriod = 10,
+                TokenLimit = 9,
+                TokensPerPeriod = 9,
                 ReplenishmentPeriod = TimeSpan.FromMinutes(1),
                 AutoReplenishment = true
             }));
