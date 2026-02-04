@@ -8,11 +8,13 @@ using ECommerce.Services;
 using ECommerce.Utils;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System.Net;
+using System.Threading.RateLimiting;
 using System.Text;
 
 
@@ -107,7 +109,6 @@ builder.Services.AddResponseCompression(options =>
     options.Providers.Add<BrotliCompressionProvider>();
     options.Providers.Add<GzipCompressionProvider>();
     
-    // Only compress successful responses (2xx status codes)
     options.ExcludedMimeTypes = new[]
     {
         "image/jpeg",
@@ -172,11 +173,54 @@ builder.Services.AddScoped<IProductBulkService, ProductBulkService>();
 builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<ICartRepository, CartRepository>();
 
+// Rate Limiting - Token Bucket Algorithm (10 requests per minute per IP)
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddPolicy("api-limiter", context =>
+        RateLimitPartition.GetTokenBucketLimiter(
+            partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            factory: _ => new TokenBucketRateLimiterOptions
+            {
+                TokenLimit = 10,
+                TokensPerPeriod = 10,
+                ReplenishmentPeriod = TimeSpan.FromMinutes(1),
+                AutoReplenishment = true
+            }));
+
+    options.OnRejected = async (context, _) =>
+    {
+        context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+        context.HttpContext.Response.ContentType = "application/json";
+
+        var retryAfter = context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfterValue)
+            ? ((TimeSpan)retryAfterValue).TotalSeconds
+            : 60;
+
+        await context.HttpContext.Response.WriteAsJsonAsync(new
+        {
+            statusCode = StatusCodes.Status429TooManyRequests,
+            message = "Rate limit exceeded. Too many requests.",
+            retryAfter = retryAfter
+        });
+    };
+});
+
 // Build the app
 var app = builder.Build();
 
 // Global Exception Handler Middleware
 app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
+
+// IMPORTANT: Response Compression MUST come first
+app.UseResponseCompression();
+
+app.UseHttpsRedirection();
+
+// CORS must come before Rate Limiter (so 429 responses include CORS headers)
+app.UseCors("CorsPolicy");
+
+// Rate Limiting (must be after CORS to include CORS headers in 429 responses)
+app.UseRateLimiter();
 
 // database Seeder
 using (var scope = app.Services.CreateScope())  
@@ -191,14 +235,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
-// IMPORTANT: Response Compression MUST come before CORS and other middleware
-app.UseResponseCompression();
-
-app.UseHttpsRedirection();
-
-// CORS must come after compression
-app.UseCors("CorsPolicy");
 
 app.UseAuthentication();
 

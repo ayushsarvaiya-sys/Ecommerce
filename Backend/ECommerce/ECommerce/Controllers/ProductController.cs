@@ -4,6 +4,7 @@ using ECommerce.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ECommerce.Controllers
 {
@@ -108,6 +109,7 @@ namespace ECommerce.Controllers
         }
 
         [Authorize(Roles = "Admin")]
+        [EnableRateLimiting("api-limiter")]
         [HttpGet("GetPaginatedAdmin")]
         public async Task<IActionResult> GetProductsAdminPaginated(
             [FromQuery] int page = 1,
