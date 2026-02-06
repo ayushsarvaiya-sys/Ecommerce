@@ -26,6 +26,9 @@ builder.Services.AddControllers();
 
 builder.Services.AddSwaggerGen();
 
+// SignalR
+builder.Services.AddSignalR();
+
 // CORS
 builder.Services.AddCors(options =>
 {
@@ -173,6 +176,9 @@ builder.Services.AddScoped<IProductBulkService, ProductBulkService>();
 builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<ICartRepository, CartRepository>();
 
+// Compression Test Data Service - Singleton to generate data once at startup
+builder.Services.AddSingleton<ICompressionTestDataService, CompressionTestDataService>();
+
 // Rate Limiting - Token Bucket Algorithm (10 requests per minute per IP)
 builder.Services.AddRateLimiter(options =>
 {
@@ -211,7 +217,6 @@ var app = builder.Build();
 // Global Exception Handler Middleware
 app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
 
-// IMPORTANT: Response Compression MUST come first
 app.UseResponseCompression();
 
 app.UseHttpsRedirection();
@@ -241,5 +246,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<ECommerce.Hubs.ChatHub>("/api/chat");
 
 app.Run();

@@ -1,54 +1,90 @@
 <div class="header">
   <div class="header-container">
+    <!-- Logo Section -->
     <div class="logo">
-      <h1>E-Commerce</h1>
+      <h1>🛍️ E-Commerce</h1>
+      <p class="tagline">Professional Store Management</p>
     </div>
 
     <!-- Show nav links only when logged in -->
     <nav class="nav-links" *ngIf="isLoggedIn()">
-      <a routerLink="/home" routerLinkActive="active">Home</a>
-      <a routerLink="/products" routerLinkActive="active">Products</a>
-      <a 
-        *ngIf="currentUser()?.role === 'Admin'" 
-        routerLink="/admin/products" 
-        routerLinkActive="active"
-        class="admin-link"
-      >
-        Manage Products
-      </a>
-      <a 
-        *ngIf="currentUser()?.role === 'Admin'" 
-        routerLink="/admin/categories" 
-        routerLinkActive="active"
-        class="admin-link"
-      >
-        Manage Categories
-      </a>
-      <a 
-        *ngIf="currentUser()?.role === 'Admin'" 
-        routerLink="/admin/bulk-import" 
-        routerLinkActive="active"
-        class="admin-link"
-      >
-        Bulk Import
-      </a>
-      <a routerLink="/profile" routerLinkActive="active">Profile</a>
-      
-      <!-- View Cart Button (User Only) -->
-      <button 
-        *ngIf="currentUser()?.role === 'User'" 
-        class="cart-btn"
-        (click)="viewCart()"
-        title="View Shopping Cart"
-      >
-        🛒 Cart <span class="cart-count" *ngIf="cartItemCount$ | async as count">{{ count }}</span>
-      </button>
+      <!-- User Navigation -->
+      <div class="nav-section">
+        <a routerLink="/home" routerLinkActive="active" class="nav-item">
+          <span class="icon">🏠</span>
+          <span>Home</span>
+        </a>
+        <a routerLink="/products" routerLinkActive="active" class="nav-item">
+          <span class="icon">📦</span>
+          <span>Products</span>
+        </a>
+        <a routerLink="/chat" routerLinkActive="active" class="nav-item chat-link">
+          <span class="icon">💬</span>
+          <span>Chat</span>
+        </a>
+        <a routerLink="/profile" routerLinkActive="active" class="nav-item">
+          <span class="icon">👤</span>
+          <span>Profile</span>
+        </a>
+
+        <!-- Cart Button (User Only) -->
+        <button 
+          *ngIf="currentUser()?.role === 'User'" 
+          class="nav-item cart-btn"
+          (click)="viewCart()"
+          title="View Shopping Cart"
+        >
+          <span class="icon">🛒</span>
+          <span>Cart</span>
+          <span class="cart-count" *ngIf="cartItemCount$ | async as count">{{ count }}</span>
+        </button>
+      </div>
+
+      <!-- Admin Navigation (Separator + Admin Section) -->
+      <div class="nav-section admin-section" *ngIf="currentUser()?.role === 'Admin'">
+        <div class="admin-badge">ADMIN PANEL</div>
+        <a 
+          routerLink="/admin/products" 
+          routerLinkActive="active"
+          class="nav-item admin-link"
+        >
+          <span class="icon">⚙️</span>
+          <span>Products</span>
+        </a>
+        <a 
+          routerLink="/admin/categories" 
+          routerLinkActive="active"
+          class="nav-item admin-link"
+        >
+          <span class="icon">📂</span>
+          <span>Categories</span>
+        </a>
+        <a 
+          routerLink="/admin/bulk-import" 
+          routerLinkActive="active"
+          class="nav-item admin-link"
+        >
+          <span class="icon">📥</span>
+          <span>Import</span>
+        </a>
+      </div>
     </nav>
 
     <!-- Show user info only when logged in -->
-    <div class="user-info" *ngIf="isLoggedIn()">
-      <span class="user-name">{{ currentUser()?.fullName }} ({{ currentUser()?.role }})</span>
-      <button class="logout-btn" (click)="logout()">Logout</button>
+    <div class="user-section" *ngIf="isLoggedIn()">
+      <div class="user-profile">
+        <div class="user-avatar">{{ currentUser()?.fullName?.charAt(0) | uppercase }}</div>
+        <div class="user-details">
+          <div class="user-name">{{ currentUser()?.fullName }}</div>
+          <div class="user-role" [class.admin-role]="currentUser()?.role === 'Admin'">
+            {{ currentUser()?.role }}
+          </div>
+        </div>
+      </div>
+      <button class="logout-btn" (click)="logout()" title="Logout">
+        <span>🚪</span>
+        <span>Logout</span>
+      </button>
     </div>
   </div>
 </div>
